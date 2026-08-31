@@ -684,3 +684,30 @@ h4 {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Mobile Touch & Bottom Bar Safe Area Overrides */
+button, input, select, textarea, a, .btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-overlay {
+    z-index: 9999; /* 모바일 하단 네비게이션 바보다 높은 최상위 터치 레이어 */
+    padding: 16px;
+    align-items: flex-end;
+  }
+  .modal-content {
+    max-height: 85vh;
+    margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-body {
+    padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px)) 16px;
+  }
+  .btn {
+    min-height: 44px; /* 모바일 핑거 터치 표준 규격 적용 */
+  }
+}
