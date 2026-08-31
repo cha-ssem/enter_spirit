@@ -1,0 +1,686 @@
+/* NVIDIA CAD Engineering Design System (design1.md) */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Dong-eui ICT Cyber Cyan Blue Brand Accent (Option 3) */
+  --color-primary: #00a8e8;                /* Cyber Cyan Blue */
+  --color-primary-dark: #007bb0;           /* Pressed Cyan Blue */
+  --color-accent-green-pale: #e6f7ff;
+
+  /* Surface */
+  --color-canvas: #ffffff;                 /* Pure White Body Canvas */
+  --color-surface-soft: #f7f7f7;           /* Soft Surface */
+  --color-surface-dark: #18181b;           /* Matte Slate Charcoal (Option 2) */
+  --color-surface-elevated: #242429;
+  --color-hairline: #cccccc;               /* 1px Hairline Border */
+  --color-hairline-strong: #404047;
+
+  /* Text Roles */
+  --color-ink: #18181b;
+  --color-body: #27272a;
+  --color-mute: #757575;
+  --color-stone: #898989;
+  --color-ash: #a7a7a7;
+  --color-on-primary: #ffffff;
+  --color-on-dark: #ffffff;
+  --color-on-dark-mute: rgba(255, 255, 255, 0.7);
+  --color-link-blue: #0046a4;
+
+  /* Fonts: Pretendard High-Readability Standard Typography */
+  --font-display: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  --font-body: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+
+  /* Geometry: Hyper-Angular CAD 2px Corner Signature */
+  --radius-sm: 2px;                        /* Every interactive element */
+  --radius-none: 0px;
+  --radius-full: 9999px;
+
+  --transition-fast: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  background-color: var(--color-canvas);
+  color: var(--color-body);
+  line-height: 1.5;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 70px;
+}
+
+@media (min-width: 769px) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* Typography Utility */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: 36px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+h4 {
+  font-size: 20px;
+}
+
+/* NVIDIA Signature Decorative Corner Square Motif */
+.corner-square {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-primary);
+  display: block;
+}
+
+/* Role Simulator Bar */
+.role-simulator-bar {
+  background-color: #111111;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1000;
+}
+
+.role-simulator-badge {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.role-switcher {
+  display: flex;
+  gap: 4px;
+}
+
+.role-btn {
+  background: var(--color-surface-elevated);
+  border: none;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.role-btn:hover, .role-btn.active {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Primary Top Navigation Bar (64px Black Sticky) */
+.navbar {
+  background-color: var(--color-surface-dark);
+  border-bottom: 1px solid var(--color-hairline-strong);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.brand-logo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 64px;
+  line-height: 1;
+  margin: 0;
+}
+
+.brand-logo .nvidia-green {
+  color: var(--color-primary);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  list-style: none;
+  height: 64px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--color-on-dark-mute);
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 0 16px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  transition: var(--transition-fast);
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item.active {
+  color: #ffffff !important;
+  font-weight: 700;
+  background-color: rgba(0, 168, 232, 0.16);
+  border-bottom: 3px solid var(--color-primary);
+}
+
+.nav-item.restricted-tab::after {
+  content: "🔒";
+  margin-left: 4px;
+  font-size: 11px;
+}
+
+/* Mobile Bottom Navigation (2px CAD) */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--color-surface-dark);
+  border-top: 1px solid var(--color-hairline-strong);
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-on-dark-mute);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  background: none;
+  border: none;
+  flex: 1;
+  height: 100%;
+  cursor: pointer;
+}
+
+.mobile-nav-btn.active {
+  color: var(--color-primary) !important;
+  background-color: rgba(0, 168, 232, 0.14);
+  border-top: 3px solid var(--color-primary);
+}
+
+/* NVIDIA CAD Rectangular Buttons (2px Corner Signature) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 24px;
+  border-radius: var(--radius-sm); /* 2px Corner Signature */
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.btn-primary:hover, .btn-primary:active {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-ink);
+  border: 2px solid var(--color-primary);
+}
+
+.btn-outline:hover {
+  background-color: rgba(118, 185, 0, 0.08);
+}
+
+.btn-outline-on-dark {
+  background-color: transparent;
+  color: var(--color-on-dark);
+  border: 1px solid var(--color-on-dark);
+}
+
+.btn-outline-on-dark:hover {
+  background-color: var(--color-on-dark);
+  color: var(--color-surface-dark);
+}
+
+.btn-ghost-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+}
+
+.btn-ghost-link:hover {
+  color: var(--color-primary-dark);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+  min-height: 36px;
+}
+
+/* Black Canvas Hero Chapter ({colors.surface-dark} #000000) */
+.hero-card-dark-nvidia {
+  background-color: var(--color-surface-dark);
+  color: var(--color-on-dark);
+  padding: 64px 48px;
+  margin-bottom: 48px;
+  border-radius: var(--radius-none);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card-dark-nvidia h1 {
+  color: var(--color-on-dark);
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.15;
+}
+
+.hero-subhead-nvidia {
+  font-size: 18px;
+  color: var(--color-on-dark-mute);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.hero-stats-nvidia {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  border-top: 1px solid var(--color-hairline-strong);
+  padding-top: 24px;
+  margin-top: 32px;
+}
+
+.stat-num-nvidia {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.stat-label-nvidia {
+  font-size: 13px;
+  color: var(--color-on-dark-mute);
+}
+
+.hero-monitor-card {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-hairline-strong);
+  padding: 24px;
+  border-radius: var(--radius-sm);
+  margin-top: 115px;
+}
+
+/* NVIDIA CAD Product Cards (2px Corner + 12px Corner Square Motif) */
+.nvidia-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.product-card {
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: var(--transition-fast);
+}
+
+.product-card:hover {
+  border-color: var(--color-primary);
+}
+
+.pill-tag-nvidia {
+  display: inline-block;
+  background-color: var(--color-surface-dark);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* LIVE ACTIVE Red Dot Blinking Animation */
+@keyframes redDotBlink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 6px #ef4444;
+  }
+  50% {
+    opacity: 0.2;
+    transform: scale(0.85);
+    box-shadow: 0 0 1px #ef4444;
+  }
+}
+
+.live-active-badge {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-hairline-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-active-dot {
+  width: 7px;
+  height: 7px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  display: inline-block;
+  animation: redDotBlink 1.2s infinite ease-in-out;
+}
+
+/* Control Bar */
+.control-bar {
+  background-color: var(--color-surface-soft);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm); /* 2px Corner */
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-ink);
+  outline: none;
+  min-height: 44px;
+  transition: var(--transition-fast);
+}
+
+.form-input:focus {
+  border-color: var(--color-primary); /* NVIDIA Green Focus Border */
+}
+
+/* NVIDIA Table */
+.nvidia-table-wrapper {
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin-bottom: 32px;
+}
+
+.nvidia-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14.5px;
+}
+
+.nvidia-table th {
+  background: var(--color-surface-soft);
+  padding: 14px 18px;
+  font-weight: 700;
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.nvidia-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.ledger-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.ledger-summary-card {
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  position: relative;
+}
+
+.ledger-summary-card.balance {
+  background: var(--color-surface-dark);
+  color: #ffffff;
+  border-color: var(--color-surface-dark);
+}
+
+.ledger-summary-card.balance .stat-num-nvidia {
+  color: var(--color-primary);
+}
+
+/* Black Canvas Footer Section ({colors.surface-dark} #000000) */
+.footer-section {
+  background-color: var(--color-surface-dark);
+  color: var(--color-on-dark-mute);
+  padding: 64px 24px 32px 24px;
+  border-top: 1px solid var(--color-hairline-strong);
+  margin-top: 80px;
+}
+
+/* Modal Overlay & Dialog (NVIDIA Style) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--color-canvas);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--color-hairline);
+  position: relative;
+}
+
+.modal-header {
+  background: var(--color-surface-dark);
+  color: #ffffff;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body {
+  padding: 32px;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  background: var(--color-surface-dark);
+  color: #ffffff;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@media (min-width: 769px) {
+  .toast {
+    bottom: 28px;
+    right: 28px;
+  }
+}
+
+/* Main Layout Container */
+.main-wrapper {
+  max-width: 1280px;
+  margin: 32px auto 80px auto;
+  padding: 0 24px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Overrides */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  .hero-card-dark-nvidia {
+    grid-template-columns: 1fr;
+    padding: 36px 24px;
+  }
+  .hero-monitor-card {
+    margin-top: 0;
+  }
+  h1 {
+    font-size: 32px;
+  }
+  h2 {
+    font-size: 28px;
+  }
+  .ledger-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .control-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .curriculum-grid-container {
+    grid-template-columns: 1fr !important;
+  }
+}

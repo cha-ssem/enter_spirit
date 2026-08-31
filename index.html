@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>기업가 정신 13기 통합 플랫폼 | NVIDIA CAD Style</title>
+  <meta name="description" content="기업가 정신 13기 원우들을 위한 회원 디렉토리, 주차별 강의 일정, 회비 및 네트워킹 장부 관리 서비스" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <!-- Primary Top Navigation Bar (64px Black Sticky) -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo" onclick="App.switchTab('home')">
+        기업가정신 <span class="nvidia-green">13기</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#" class="nav-item active" data-tab="home">Overview</a></li>
+        <li><a href="#" class="nav-item restricted-tab" data-tab="members">Members</a></li>
+        <li><a href="#" class="nav-item" data-tab="schedule">Curriculum</a></li>
+        <li><a href="#" class="nav-item" data-tab="profile">My Page</a></li>
+        <li id="navAdminTab"><a href="#" class="nav-item" data-tab="admin"
+            style="background: var(--color-surface-elevated); color: var(--color-primary);">⚙️ Admin & Ledger</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span id="topNavUserWelcomeText" style="font-size: 14px; font-weight: 600; color: #ffffff; cursor: pointer; display: none;" onclick="App.switchTab('profile')" title="내 프로필 페이지로 이동"></span>
+        <button id="topNavUserBtn" class="btn btn-primary btn-sm" onclick="App.openRegisterModal()">
+          📝 회원가입하기 →
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Bottom Navigation (2px CAD) -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" data-tab="home">
+      <span style="font-size: 16px;">🏠</span>
+      <span>Overview</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="members">
+      <span style="font-size: 16px;">👥</span>
+      <span>Members</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="schedule">
+      <span style="font-size: 16px;">📅</span>
+      <span>Schedule</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="profile">
+      <span style="font-size: 16px;">👤</span>
+      <span>Profile</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="admin" id="mobileNavAdminBtn">
+      <span style="font-size: 16px;">⚙️</span>
+      <span>Admin</span>
+    </button>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="main-wrapper">
+
+    <!-- 1. HOME TAB -->
+    <section id="tab-home" class="tab-content active">
+      <!-- Black Canvas Hero Chapter ({colors.surface-dark} #000000) -->
+      <div class="hero-card-dark-nvidia">
+        <div>
+          <span class="pill-tag-nvidia"
+            style="margin-bottom: 12px; border: 1px solid var(--color-hairline-strong);">ENTREPRENEURSHIP 13TH
+            EDITION</span>
+          <h1>Accelerating Innovation.</h1>
+          <p class="hero-subhead-nvidia">
+            13기 원우들의 업종별 스마트 디렉토리부터 주차별 강의 커리큘럼, 카카오톡 일정 공유 서비스를 제공합니다.
+          </p>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="App.switchTab('members')">
+              13기 정회원 디렉토리 →
+            </button>
+            <button class="btn btn-outline-on-dark" onclick="App.switchTab('schedule')">
+              강의 커리큘럼 보기
+            </button>
+          </div>
+
+          <div class="hero-stats-nvidia" id="homeStats">
+            <!-- Stats rendered dynamically -->
+          </div>
+        </div>
+
+        <div class="hero-monitor-card">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline-strong); padding-bottom: 12px; margin-bottom: 16px;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--color-on-dark-mute); letter-spacing: 1px;">13TH
+              LECTURE MONITOR</span>
+            <span class="pill-tag-nvidia live-active-badge"><span class="live-active-dot"></span> LIVE ACTIVE</span>
+          </div>
+
+          <div id="homeLectureBox">
+            <!-- Upcoming lecture preview -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Cards Grid -->
+      <h2 style="font-size: 32px; margin-bottom: 24px;">13TH PLATFORM CAPABILITIES</h2>
+      <div class="nvidia-card-grid">
+        <div class="product-card" onclick="App.switchTab('members')" style="cursor: pointer;">
+          <span class="corner-square"></span>
+          <div>
+            <span class="pill-tag-nvidia" style="margin-bottom: 12px;">MEMBER DIRECTORY</span>
+            <h3 style="font-size: 20px; margin: 12px 0 8px 0;">정회원 비즈니스 디렉토리</h3>
+            <p style="font-size: 15px; color: var(--color-body); line-height: 1.5;">한국표준산업분류(KSIC) 기준 14대 업종별 아이콘 표기 및
+              정회원 사업체 요약 정보 제공</p>
+          </div>
+          <div style="margin-top: 24px;">
+            <span class="btn-ghost-link">Learn More →</span>
+          </div>
+        </div>
+
+        <div class="product-card" onclick="App.switchTab('schedule')" style="cursor: pointer;">
+          <span class="corner-square"></span>
+          <div>
+            <span class="pill-tag-nvidia" style="margin-bottom: 12px;">13TH CURRICULUM</span>
+            <h3 style="font-size: 20px; margin: 12px 0 8px 0;">주차별 대표 강의 일정</h3>
+            <p style="font-size: 15px; color: var(--color-body); line-height: 1.5;">12주차 강의 커리큘럼, 강사 이력 확인, 강의자료 다운로드 및
+              카카오톡 공유 포맷 복사</p>
+          </div>
+          <div style="margin-top: 24px;">
+            <span class="btn-ghost-link">Learn More →</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MEMBERS DIRECTORY TAB -->
+    <section id="tab-members" class="tab-content">
+      <div style="margin-bottom: 32px;">
+        <span class="pill-tag-nvidia">MEMBER DIRECTORY</span>
+        <h2 style="font-size: 36px; margin-top: 8px;">13기 정회원 디렉토리</h2>
+        <p style="color: var(--color-mute); font-size: 16px;">한국표준산업분류(KSIC) 기준 13기 정회원 및 임원진 비즈니스 네트워크입니다.</p>
+      </div>
+
+      <!-- Control Bar -->
+      <div class="control-bar" id="memberControlBar">
+        <div style="flex: 1; min-width: 240px;">
+          <input type="text" id="memberSearch" class="form-input" placeholder="이름 또는 회사명 검색..." />
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <select id="industryFilter" class="form-input" style="width: auto;">
+            <option value="all">전체 업종 보기 (KSIC 기준)</option>
+            <option value="정보통신업">💻 정보통신업 (IT·SaaS·소프트웨어)</option>
+            <option value="제조업">⚙️ 제조업 (전자·기계·장비·식료품)</option>
+            <option value="보건업 및 사회복지 서비스업">🧬 보건업 및 사회복지 서비스업 (바이오·헬스)</option>
+            <option value="도매 및 소매업">🛍️ 도매 및 소매업 (커머스·무역·유통)</option>
+            <option value="전문, 과학 및 기술 서비스업">⚖️ 전문, 과학 및 기술 서비스업 (컨설팅·법무·R&D)</option>
+            <option value="부동산업">🏢 부동산업 (임대·개발·중개)</option>
+            <option value="건설업">🏗️ 건설업 (건축·토목·인테리어)</option>
+            <option value="교육 서비스업">🎓 교육 서비스업 (에듀테크·연수·학원)</option>
+            <option value="숙박 및 음식점업">🍽️ 숙박 및 음식점업 (호텔·F&B)</option>
+            <option value="금융 및 보험업">💰 금융 및 보험업 (VC·투자·핀테크)</option>
+            <option value="운수 및 창고업">🚚 운수 및 창고업 (물류·배송)</option>
+            <option value="예술, 스포츠 및 여가관련 서비스업">🎨 예술, 스포츠 및 여가관련 서비스업</option>
+            <option value="사업시설 관리 및 사업지원 서비스업">🏢 사업시설 관리 및 사업지원 서비스업</option>
+            <option value="농업, 임업 및 어업">🌾 농업, 임업 및 어업 (스마트팜)</option>
+          </select>
+
+          <select id="cohortFilter" class="form-input" style="width: auto;">
+            <option value="13" selected>13기 원우</option>
+            <option value="all">전체 기수 보기</option>
+          </select>
+
+          <select id="sortSelect" class="form-input" style="width: auto;">
+            <option value="name">이름순 (가나다)</option>
+            <option value="company">회사명순</option>
+            <option value="cohort">기수순</option>
+            <option value="joinDate">최근 가입순</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Restricted Notice Card -->
+      <div id="restrictedNoticeCard" class="product-card"
+        style="display: none; text-align: center; max-width: 520px; margin: 32px auto; padding: 40px 24px;">
+        <span class="corner-square"></span>
+        <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
+        <h3 style="font-size: 24px; margin-bottom: 8px;">정회원 전용 디렉토리 열람 권한</h3>
+        <p style="color: var(--color-mute); font-size: 15px; margin-bottom: 24px;">
+          미가입 비회원 및 일반회원 등급은 전체 원우 디렉토리를 열람하실 수 없습니다.<br />
+          <strong>회원가입 및 회비 납부가 완료되면 정회원으로 승인되어 전체 원우 디렉토리가 개방됩니다.</strong>
+        </p>
+        <button class="btn btn-primary" onclick="App.openRegisterModal()">
+          📝 원우 회원가입 신청하기 →
+        </button>
+      </div>
+
+      <!-- Member Grid Container -->
+      <div id="memberGridContainer" class="nvidia-card-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- 3. SCHEDULE TAB -->
+    <section id="tab-schedule" class="tab-content">
+      <div style="margin-bottom: 32px;">
+        <span class="pill-tag-nvidia">13TH CURRICULUM</span>
+        <h2 style="font-size: 36px; margin-top: 8px;">13기 전체 강의 일정표</h2>
+        <p style="color: var(--color-mute); font-size: 16px;">주차별 강의 내용과 강사 이력을 확인하고 강의자료를 다운로드하세요.</p>
+      </div>
+
+      <!-- 2-Column Layout (Left: Schedule Cards, Right: 2026_3_curriculum.jpg Poster Card) -->
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: flex-start;"
+        class="curriculum-grid-container">
+        <!-- Left: Dynamic Lecture Cards & Admin Add Button -->
+        <div>
+          <div id="scheduleListContainer" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Schedule cards rendered dynamically -->
+          </div>
+
+          <!-- 💡 관리자 전용: 마지막 강의 일정 아래 신규 강의 추가 단추 -->
+          <div id="adminAddLectureBtnContainer" style="display: none; margin-top: 24px;">
+            <button type="button" class="btn btn-primary" onclick="App.openAddLectureModal()" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; font-weight: 700; gap: 8px;">
+              ➕ 13기 신규 강의 일정 추가하기 (관리자 전용)
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: 2026_3_curriculum.jpg Poster Card -->
+        <div class="product-card" style="position: sticky; top: 88px;">
+          <span class="corner-square"></span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff;">CURRICULUM
+              POSTER</span>
+            <span style="font-size: 12px; color: var(--color-mute);">2026.03</span>
+          </div>
+          <h4 style="font-size: 18px; margin-bottom: 4px; font-weight: 700; color: var(--color-ink);">13기 교육과정 브로슈어</h4>
+          <p style="font-size: 12.5px; color: var(--color-primary); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 4px;">
+            🔍 이미지를 클릭하면 확대 보기 가능
+          </p>
+
+          <div
+            style="overflow: hidden; border-radius: var(--radius-sm); border: 1px solid var(--color-hairline); margin-bottom: 14px; background: var(--color-surface-soft);">
+            <img src="images/2026_3_curriculum.jpg" alt="2026 13기 교육과정 일정표 포스터"
+              onclick="App.openImageZoomModal('images/2026_3_curriculum.jpg')"
+              style="width: 100%; height: auto; display: block; object-fit: contain; cursor: zoom-in; transition: transform 0.2s ease;"
+              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"
+              title="🔍 클릭하면 고화질 화면으로 확대됩니다" />
+          </div>
+
+          <a href="images/2026_3_curriculum.jpg" download="2026_3_curriculum.jpg" class="btn btn-outline btn-sm"
+            style="width: 100%; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            📥 커리큘럼 원본 이미지 다운로드
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PROFILE TAB -->
+    <section id="tab-profile" class="tab-content">
+      <div style="margin-bottom: 32px;">
+        <span class="pill-tag-nvidia">MY ACCOUNT</span>
+        <h2 style="font-size: 36px; margin-top: 8px;">내 프로필 & 회비 현황</h2>
+        <p style="color: var(--color-mute); font-size: 16px;">회원가입이 완료된 원우들의 전용 프로필 관리 및 회비 납부 확인 공간입니다.</p>
+      </div>
+
+      <!-- Guest Restricted Notice Card (Unregistered Guest) -->
+      <div id="guestProfileRestrictedCard" class="product-card"
+        style="display: none; text-align: center; max-width: 520px; margin: 32px auto; padding: 40px 24px;">
+        <span class="corner-square"></span>
+        <div style="font-size: 40px; margin-bottom: 12px;">🔑</div>
+        <h3 style="font-size: 24px; margin-bottom: 8px;">회원 전용 마이페이지</h3>
+        <p style="color: var(--color-mute); font-size: 15px; margin-bottom: 24px;">
+          마이페이지는 회원가입 완료 후 이용 가능합니다.<br />
+          원우 회원가입을 마치시면 프로필 정보 등록, 사진 업로드 및 회비 납부 현황 조회가 개방됩니다.
+        </p>
+        <button class="btn btn-primary" onclick="App.openRegisterModal()">
+          📝 원우 회원가입 신청하기 →
+        </button>
+      </div>
+
+      <!-- Profile Form Container (Registered Users) -->
+      <div id="profileFormContainer"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+        <div class="product-card" style="text-align: center;">
+          <span class="corner-square"></span>
+          <img id="sidebarAvatarImg"
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="프로필"
+            style="width: 100px; height: 100px; border-radius: var(--radius-sm); object-fit: cover; margin-bottom: 8px; border: 1px solid var(--color-hairline);" />
+
+          <div style="margin-bottom: 12px;">
+            <label for="avatarFileInput" class="btn btn-outline btn-sm"
+              style="cursor: pointer; font-size: 12px; padding: 4px 12px; min-height: 30px; display: inline-flex; align-items: center; justify-content: center; width: 100%;">
+              📷 사진 업로드 / 변경
+            </label>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" />
+          </div>
+
+          <h3 id="sidebarMemberName" style="font-size: 20px;">-</h3>
+          <span id="sidebarMemberRole" class="pill-tag-nvidia" style="margin-top: 6px;">-</span>
+
+          <div style="margin-top: 24px; border-top: 1px solid var(--color-hairline); padding-top: 16px;">
+            <div style="font-size: 13px; color: var(--color-mute);">개인 회비 납부 현황:</div>
+            <div id="feeStatusBadge" class="pill-tag-nvidia"
+              style="font-size: 12px; margin-top: 8px; background: #dcfce7; color: #15803d;">
+              회비 납부 완료 (2026-03-05)
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" style="grid-column: span 2;">
+          <span class="corner-square"></span>
+          <form id="profileForm">
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명
+                  (이름)</label>
+                <input type="text" id="profileName" class="form-input" required />
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">회사명</label>
+                <input type="text" id="profileCompany" class="form-input" required />
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기수
+                  (Cohort)</label>
+                <select id="profileCohort" class="form-input">
+                  <option value="13">13기</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">업종
+                  분류 (KSIC 한국표준산업분류 기준)</label>
+                <select id="profileIndustry" class="form-input">
+                  <option value="정보통신업">💻 정보통신업 (IT·소프트웨어·SaaS)</option>
+                  <option value="제조업">⚙️ 제조업 (전자·기계·장비·식료품)</option>
+                  <option value="도매 및 소매업">🛍️ 도매 및 소매업 (유통·무역·이커머스)</option>
+                  <option value="전문, 과학 및 기술 서비스업">⚖️ 전문, 과학 및 기술 서비스업 (컨설팅·법무·세무)</option>
+                  <option value="부동산업">🏢 부동산업 (부동산 개발·임대·자산관리)</option>
+                  <option value="건설업">🏗️ 건설업 (건축·토목·플랜트)</option>
+                  <option value="교육 서비스업">🎓 교육 서비스업 (대학·학원·에듀테크)</option>
+                  <option value="보건업 및 사회복지 서비스업">🧬 보건업 및 사회복지 서비스업 (의료·바이오·제약)</option>
+                  <option value="숙박 및 음식점업">🍽️ 숙박 및 음식점업 (F&B·호스피탈리티)</option>
+                  <option value="금융 및 보험업">💰 금융 및 보험업 (VC·PE·자산운용)</option>
+                  <option value="운수 및 창고업">🚚 운수 및 창고업 (물류·운송)</option>
+                  <option value="예술, 스포츠 및 여가관련 서비스업">🎨 예술, 스포츠 및 여가관련 서비스업</option>
+                  <option value="사업시설 관리 및 사업지원 서비스업">🛠️ 사업시설 관리 및 사업지원 서비스업</option>
+                  <option value="농업, 임업 및 어업">🌾 농업, 임업 및 어업 (스마트팜)</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">회사
+                  위치</label>
+                <input type="text" id="profileLocation" class="form-input" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">연락처</label>
+                <input type="text" id="profilePhone" class="form-input" required />
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기업가정신 포럼 13기(2026-2) 단톡방 내 프로필 명</label>
+                <input type="text" id="profileKakao" class="form-input" required />
+              </div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🌐 회사 홈페이지 / 웹사이트 URL (선택)</label>
+              <input type="url" id="profilePageURL" class="form-input" placeholder="예: https://www.koreatech.com" />
+            </div>
+
+            <div style="margin-bottom: 24px;">
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">주요
+                서비스 및 사업 요약</label>
+              <textarea id="profileSummary" class="form-input" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              Save Profile Data →
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ADMIN & LEDGER TAB -->
+    <section id="tab-admin" class="tab-content">
+      <div style="margin-bottom: 32px;">
+        <span class="pill-tag-nvidia">ADMINISTRATION & LEDGER</span>
+        <h2 style="font-size: 36px; margin-top: 8px;">회원 등급 & 네트워킹 회계 장부</h2>
+      </div>
+
+      <!-- Member Table -->
+      <h3 style="font-size: 20px; margin-bottom: 16px;">📋 회원가입 & 회비 납부 상태 관리</h3>
+      <div class="nvidia-table-wrapper">
+        <table class="nvidia-table">
+          <thead>
+            <tr>
+              <th>성명 (기수)</th>
+              <th>회사명</th>
+              <th>회원 등급</th>
+              <th>가입일</th>
+              <th>회비 상태</th>
+              <th>회비 납부일자</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="adminMemberTableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+
+
+      <!-- Ledger Section -->
+      <h3 style="font-size: 20px; margin-top: 40px; margin-bottom: 16px;">💰 네트워킹 찬조 & 회식 지출 장부</h3>
+
+      <div class="ledger-summary-grid">
+        <div class="ledger-summary-card">
+          <span class="corner-square"></span>
+          <div style="font-size: 13px; color: var(--color-mute);">총 찬조금 수입</div>
+          <div id="totalSponsorshipAmount" class="stat-num-nvidia" style="color: #16a34a;">0원</div>
+        </div>
+        <div class="ledger-summary-card">
+          <span class="corner-square"></span>
+          <div style="font-size: 13px; color: var(--color-mute);">총 회식/진행 지출</div>
+          <div id="totalExpenseAmount" class="stat-num-nvidia" style="color: #dc2626;">0원</div>
+        </div>
+        <div class="ledger-summary-card balance">
+          <span class="corner-square"></span>
+          <div style="font-size: 13px; opacity: 0.8;">장부 남은 잔액</div>
+          <div id="ledgerBalanceAmount" class="stat-num-nvidia">0원</div>
+        </div>
+      </div>
+
+      <!-- Ledger Form Card -->
+      <div class="product-card" style="margin-bottom: 32px;">
+        <span class="corner-square"></span>
+        <h4 style="font-size: 18px; margin-bottom: 16px;">➕ 수입/지출 내역 등록</h4>
+        <form id="ledgerForm">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">구분</label>
+              <select id="ledgerType" class="form-input">
+                <option value="sponsorship">🟢 찬조 / 수입</option>
+                <option value="expense">🔴 지출 (회식/진행비)</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명
+                / 집행 주체</label>
+              <input type="text" id="ledgerName" class="form-input" placeholder="예: 박서연 관리자" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">분류
+                항목</label>
+              <input type="text" id="ledgerCategory" class="form-input" placeholder="예: 찬조금, 식대" required />
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">내역
+                설명</label>
+              <input type="text" id="ledgerItem" class="form-input" placeholder="예: 개강 기념 찬조금" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">금액
+                (원)</label>
+              <input type="number" id="ledgerAmount" class="form-input" placeholder="100000" required />
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">비고</label>
+              <input type="text" id="ledgerNote" class="form-input" placeholder="비고..." />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-sm">
+            ➕ 장부 내역 기록
+          </button>
+        </form>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="nvidia-table-wrapper">
+        <table class="nvidia-table">
+          <thead>
+            <tr>
+              <th>날짜</th>
+              <th>구분</th>
+              <th>성명/항목</th>
+              <th>내역 설명</th>
+              <th>금액</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody id="ledgerTableBody">
+            <!-- Ledger rows rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer-section">
+    <div
+      style="max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+      <div style="display: flex; flex-direction: column; justify-content: space-between; height: 46px;">
+        <span
+          style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #ffffff; line-height: 1.25;">기업가정신
+          <span style="color: var(--color-primary);">13기</span></span>
+        <p style="font-size: 13px; color: var(--color-on-dark-mute); line-height: 1.3; margin: 0;">© 2026
+          ENTREPRENEURSHIP 13TH ALL RIGHTS RESERVED.</p>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; height: 46px;">
+        <img src="images/ICT_logo.jpg" alt="동의대학교 인공지능그랜드 ICT연구센터"
+          style="height: 25px; object-fit: contain; border-radius: var(--radius-sm);" />
+        <div style="font-size: 13px; color: var(--color-on-dark-mute); font-weight: 500; line-height: 1.3;">
+          동의대학교 인공지능그랜드 ICT연구센터
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast">
+    <span>💡</span>
+    <span class="toast-message">알림 메시지</span>
+  </div>
+
+  <!-- Lecture Edit Modal Dialog -->
+  <div id="lectureEditModal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="corner-square"></span>
+      <div class="modal-header">
+        <h3 style="font-size: 18px; font-weight: 700; color: #fff;" id="editModalTitle">✏️ 13기 강의 커리큘럼 수정</h3>
+        <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px; min-height: auto;"
+          onclick="App.closeEditLectureModal()">✕ 닫기</button>
+      </div>
+      <div class="modal-body">
+        <form id="editLectureForm">
+          <input type="hidden" id="editLecWeek" />
+
+          <div style="margin-bottom: 16px;">
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+              주제 / 제목</label>
+            <input type="text" id="editLecTitle" class="form-input" required />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">일시</label>
+              <input type="text" id="editLecDate" class="form-input" required />
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+                장소</label>
+              <input type="text" id="editLecLocation" class="form-input" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사명 *</label>
+              <input type="text" id="editLecSpeaker" class="form-input" required />
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사 주요 이력 *</label>
+              <input type="text" id="editLecSpeakerBio" class="form-input" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🔗 강사 관련 URL / 약력 링크 (선택)</label>
+            <input type="url" id="editLecSpeakerUrl" class="form-input" placeholder="예: https://speaker-profile.com" />
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📁 강의자료 다운로드 URL (선택)</label>
+            <input type="text" id="editLecMaterialUrl" class="form-input" placeholder="업로드된 다운로드 URL 입력 (입력 시에만 단추 노출)" />
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+              세부 설명 및 안내</label>
+            <textarea id="editLecDescription" class="form-input" rows="4" required></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.closeEditLectureModal()">취소</button>
+            <button type="submit" class="btn btn-primary btn-sm">💾 수정사항 저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Lecture Modal Dialog -->
+  <div id="lectureAddModal" class="modal-overlay" onclick="if(event.target === this) App.closeAddLectureModal();">
+    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 24px;">
+      <span class="corner-square"></span>
+      <div class="modal-header">
+        <h3 style="font-size: 20px; font-weight: 700; color: #fff;">➕ 신규 주차 강의 커리큘럼 등록 (관리자)</h3>
+        <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeAddLectureModal()">✕ 닫기</button>
+      </div>
+      <div class="modal-body" style="padding-top: 16px;">
+        <form id="addNewLectureForm" onsubmit="App.addLecture(event)">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기수 (Cohort) *</label>
+              <input type="number" id="addLecCohort" class="form-input" value="13" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 주차 (숫자) *</label>
+              <input type="number" id="addLecWeek" class="form-input" placeholder="예: 6" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 주제 / 제목 *</label>
+            <input type="text" id="addLecTitle" class="form-input" placeholder="예: 글로벌 시장 진출과 IPO 실무" required />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 일시 *</label>
+              <input type="text" id="addLecDate" class="form-input" value="2026-09-12 (토) 13:30" placeholder="예: 2026-09-12 (토) 13:30" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 장소 *</label>
+              <input type="text" id="addLecLocation" class="form-input" value="산학협력관 1층 프라임컨벤션홀" placeholder="예: 산학협력관 1층 프라임컨벤션홀" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사 성명 *</label>
+              <input type="text" id="addLecSpeaker" class="form-input" placeholder="예: 최성원 대표" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사 주요 이력 *</label>
+              <input type="text" id="addLecSpeakerBio" class="form-input" placeholder="예: 유니콘 파트너스 대표" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🔗 강사 관련 URL / 약력 링크 (선택)</label>
+            <input type="url" id="addLecSpeakerUrl" class="form-input" placeholder="예: https://speaker-profile.com" />
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📁 강의자료 다운로드 URL (선택)</label>
+            <input type="text" id="addLecMaterialUrl" class="form-input" placeholder="업로드된 다운로드 URL 입력 (입력 시에만 단추 노출)" />
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 세부 내용 및 개요 *</label>
+            <textarea id="addLecDescription" class="form-input" rows="3" placeholder="강의 주요 핵심 내용과 학습 목표..." required></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.closeAddLectureModal()">취소</button>
+            <button type="submit" class="btn btn-primary btn-sm">➕ 신규 커리큘럼 등록</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Zoom Lightbox Modal Dialog -->
+  <div id="imageZoomModal" class="modal-overlay" onclick="if(event.target === this) App.closeImageZoomModal();">
+    <div class="modal-content"
+      style="max-width: 92vw; max-height: 92vh; width: auto; padding: 20px; background: rgba(0, 0, 0, 0.95); border-color: var(--color-primary); overflow: hidden; text-align: center;">
+      <span class="corner-square"></span>
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--color-hairline-strong); padding-bottom: 12px;">
+        <span style="font-size: 16px; font-weight: 700; color: #fff;">🔍 13기 교육과정 커리큘럼 고화질 확대보기</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="images/2026_3_curriculum.jpg" download="2026_3_curriculum.jpg" class="btn btn-primary btn-sm"
+            style="padding: 2px 12px; font-size: 12px;">📥 다운로드</a>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px; min-height: auto;"
+            onclick="App.closeImageZoomModal()">✕ 닫기 (Esc)</button>
+        </div>
+      </div>
+      <div style="text-align: center; overflow: auto; max-height: 80vh;">
+        <img id="zoomModalImg" src="" alt="커리큘럼 이미지 확대보기"
+          style="max-width: 100%; height: auto; display: inline-block; border-radius: var(--radius-sm); border: 1px solid var(--color-hairline-strong);" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Register / Auth Modal Dialog (3-Option Gateway) -->
+  <div id="registerModal" class="modal-overlay" onclick="if(event.target === this) App.closeRegisterModal();">
+    <div class="modal-content" style="max-width: 540px; width: 92%; padding: 28px;">
+      <span class="corner-square"></span>
+      
+      <!-- 1. AUTH SELECTION MAIN VIEW (모달 첫 페이지 선택 화면) -->
+      <div id="authMainView">
+        <div class="modal-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 16px; margin-bottom: 24px;">
+          <div>
+            <h3 style="font-size: 22px; font-weight: 700; color: #fff;">👋 원우 회원가입 & 로그인</h3>
+          </div>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 4px 12px;" onclick="App.closeRegisterModal()">✕ 닫기</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Option 1: Google Social Auth -->
+          <button type="button" class="btn btn-outline" onclick="App.handleGoogleSignUp()" 
+            style="width: 100%; justify-content: center; background: #ffffff; color: #1f1f1f; border-color: #dadce0; font-weight: 700; padding: 14px; gap: 12px; font-size: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+            <svg width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+            🔴 Google 계정으로 1초만에 시작하기
+          </button>
+
+          <div style="display: flex; align-items: center; gap: 12px; margin: 6px 0;">
+            <div style="flex: 1; height: 1px; background: var(--color-hairline);"></div>
+            <span style="font-size: 12px; color: var(--color-mute);">또는 아래 방법 선택</span>
+            <div style="flex: 1; height: 1px; background: var(--color-hairline);"></div>
+          </div>
+
+          <!-- Option 2: Direct Login -->
+          <button type="button" class="btn btn-outline" onclick="App.switchAuthModalView('login')" 
+            style="width: 100%; justify-content: center; padding: 13px; font-size: 15px; font-weight: 700; gap: 8px;">
+            🔑 기존 회원 로그인하기 →
+          </button>
+
+          <!-- Option 3: New Register Form -->
+          <button type="button" class="btn btn-primary" onclick="App.switchAuthModalView('register')" 
+            style="width: 100%; justify-content: center; padding: 13px; font-size: 15px; font-weight: 700; gap: 8px;">
+            📝 신규 회원가입 신청하기 →
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. DIRECT LOGIN SUB-VIEW -->
+      <div id="authLoginView" style="display: none;">
+        <div class="modal-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 18px;">
+          <button type="button" class="btn btn-sm btn-outline-on-dark" onclick="App.switchAuthModalView('main')">← 뒤로가기</button>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔑 기존 회원 로그인</h3>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeRegisterModal()">✕</button>
+        </div>
+
+        <form onsubmit="App.handleDirectLogin(event)">
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">회원 아이디 (ID) *</label>
+            <input type="text" id="loginUsername" class="form-input" placeholder="가입하신 아이디 입력" required />
+          </div>
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">비밀번호 (Password) *</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="비밀번호 입력" required />
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.switchAuthModalView('main')">취소</button>
+            <button type="submit" class="btn btn-primary btn-sm" style="padding: 8px 20px;">🔑 로그인 하기</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 3. NEW REGISTER FORM SUB-VIEW (아이디/비밀번호 ~ 성명 ~ 주요 서비스 요약) -->
+      <div id="authRegisterView" style="display: none;">
+        <div class="modal-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 18px;">
+          <button type="button" class="btn btn-sm btn-outline-on-dark" onclick="App.switchAuthModalView('main')">← 뒤로가기</button>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📝 신규 원우 회원가입</h3>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeRegisterModal()">✕</button>
+        </div>
+
+        <form id="registerForm" onsubmit="App.handleRegisterSubmit(event)">
+          <!-- ID & Password Fields -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">희망 아이디 (ID) *</label>
+              <input type="text" id="regUsername" class="form-input" placeholder="예: hong1234" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">비밀번호 (Password) *</label>
+              <input type="password" id="regPassword" class="form-input" placeholder="비밀번호 설정" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">성명 (이름) *</label>
+              <input type="text" id="regName" class="form-input" placeholder="예: 홍길동" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">기수 (Cohort) *</label>
+              <select id="regCohort" class="form-input">
+                <option value="13">13기</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">회사명 *</label>
+              <input type="text" id="regCompany" class="form-input" placeholder="예: (주)한국테크" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">업종 분류 (KSIC 기준) *</label>
+              <select id="regIndustry" class="form-input" required>
+                <option value="정보통신업">💻 정보통신업 (IT·소프트웨어·SaaS)</option>
+                <option value="제조업">⚙️ 제조업 (전자·기계·장비·식료품)</option>
+                <option value="도매 및 소매업">🛍️ 도매 및 소매업 (유통·무역·이커머스)</option>
+                <option value="전문, 과학 및 기술 서비스업">⚖️ 전문, 과학 및 기술 서비스업 (컨설팅·법무·세무)</option>
+                <option value="부동산업">🏢 부동산업 (부동산 개발·임대·자산관리)</option>
+                <option value="건설업">🏗️ 건설업 (건축·토목·플랜트)</option>
+                <option value="교육 서비스업">🎓 교육 서비스업 (대학·학원·에듀테크)</option>
+                <option value="보건업 및 사회복지 서비스업">🧬 보건업 및 사회복지 서비스업 (의료·바이오·제약)</option>
+                <option value="숙박 및 음식점업">🍽️ 숙박 및 음식점업 (F&B·호스피탈리티)</option>
+                <option value="금융 및 보험업">💰 금융 및 보험업 (VC·PE·자산운용)</option>
+                <option value="운수 및 창고업">🚚 운수 및 창고업 (물류·운송)</option>
+                <option value="예술, 스포츠 및 여가관련 서비스업">🎨 예술, 스포츠 및 여가관련 서비스업</option>
+                <option value="사업시설 관리 및 사업지원 서비스업">🛠️ 사업시설 관리 및 사업지원 서비스업</option>
+                <option value="농업, 임업 및 어업">🌾 농업, 임업 및 어업 (스마트팜)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">연락처 *</label>
+              <input type="text" id="regPhone" class="form-input" placeholder="010-0000-0000" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">단톡방 프로필 명 *</label>
+              <input type="text" id="regKakao" class="form-input" placeholder="예: [13기] 홍길동 (한국테크)" required />
+            </div>
+          </div>
+
+          <!-- 입력 항목 바로 아래 액션 단추 구역 -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--color-hairline); padding-top: 16px; margin-top: 12px;">
+            <button type="button" class="btn btn-outline btn-sm" style="padding: 8px 18px;" onclick="App.switchAuthModalView('main')">취소</button>
+            <button type="submit" class="btn btn-primary btn-sm" style="padding: 8px 24px; font-size: 14px; font-weight: 700;">📝 회원가입 신청 완료</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Scripts -->
+  <script src="js/mock-data.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Firebase SDK (v12 Modular CDN with Auth & Firestore) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+    import { 
+      getFirestore, collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { 
+      getAuth, GoogleAuthProvider, signInWithPopup 
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBCsNPkEhd0sZSRCsWKlQ2H5wVgDLwxdG4",
+      authDomain: "enterprise-db-88dde.firebaseapp.com",
+      projectId: "enterprise-db-88dde",
+      storageBucket: "enterprise-db-88dde.firebasestorage.app",
+      messagingSenderId: "193649165026",
+      appId: "1:193649165026:web:2e25595dc80401e68254bb",
+      measurementId: "G-4VPLSKTQBT"
+    };
+
+    // Initialize Firebase & Firestore DB & Auth
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // Global References for app.js
+    window.db = db;
+    window.FS = { collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc };
+    window.auth = auth;
+    window.googleProvider = googleProvider;
+    window.signInWithPopup = signInWithPopup;
+  </script>
+
+
+</body>
+
+</html>
