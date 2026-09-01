@@ -518,6 +518,7 @@ const App = {
           <div>📍 ${m.location}</div>
           <div>📞 ${m.phone}</div>
           <div>💬 카톡: <strong style="color: var(--color-ink);">${m.kakaoId}</strong></div>
+          ${(m.Pemail || m.googleEmail) ? `<div>📧 이메일: <strong style="color: var(--color-ink);">${m.Pemail || m.googleEmail}</strong></div>` : ''}
         </div>
       </div>
     `).join("");
@@ -850,6 +851,7 @@ const App = {
       location: "부산 센텀",
       phone: googleUser && googleUser.phoneNumber ? googleUser.phoneNumber : "010-3849-5501",
       kakaoId: googleEmail ? googleEmail.split("@")[0] : "google_user",
+      Pemail: googleEmail || "",
       avatarUrl: googleUser && googleUser.photoURL ? googleUser.photoURL : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
       summary: "Google 계정 원클릭 소셜 가입 13기 원우",
       feePaid: false,
@@ -1081,6 +1083,8 @@ const App = {
     document.getElementById("profileKakao").value = user.kakaoId || "";
     const profilePageURLEl = document.getElementById("profilePageURL");
     if (profilePageURLEl) profilePageURLEl.value = user.pageURL || "";
+    const profilePemailEl = document.getElementById("profilePemail");
+    if (profilePemailEl) profilePemailEl.value = user.Pemail || user.googleEmail || "";
     document.getElementById("profileSummary").value = user.summary || "";
 
     const sidebarAvatarImg = document.getElementById("sidebarAvatarImg");
@@ -1121,6 +1125,7 @@ const App = {
     const selectedCohort = parseInt(document.getElementById("profileCohort").value, 10) || 13;
     const meta = this.getIndustryMeta ? this.getIndustryMeta(selectedIndustry) : { icon: "💻" };
     const pageURLVal = document.getElementById("profilePageURL") ? document.getElementById("profilePageURL").value.trim() : "";
+    const PemailVal = document.getElementById("profilePemail") ? document.getElementById("profilePemail").value.trim() : "";
 
     const updatedUser = {
       ...this.members[userIndex],
@@ -1133,6 +1138,7 @@ const App = {
       phone: document.getElementById("profilePhone").value.trim(),
       kakaoId: document.getElementById("profileKakao").value.trim(),
       pageURL: pageURLVal, // 💡 회사 홈페이지 웹사이트 URL 저장
+      Pemail: PemailVal, // 💡 개인 이메일(Pemail) 저장
       summary: document.getElementById("profileSummary").value.trim()
     };
 
