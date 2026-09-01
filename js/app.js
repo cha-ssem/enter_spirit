@@ -458,6 +458,15 @@ const App = {
       container.style.display = "none";
       if (controlBar) controlBar.style.display = "none";
       if (restrictedCard) restrictedCard.style.display = "block";
+
+      const regBtn = document.getElementById("restrictedRegisterBtn");
+      if (regBtn) {
+        if (this.currentRole === "regular") {
+          regBtn.style.display = "none"; // 이미 가입한 일반 회원은 '회원가입 및 로그인하기' 단추 숨김
+        } else {
+          regBtn.style.display = "inline-flex"; // 비회원(guest)에게만 표출
+        }
+      }
       return;
     }
 
