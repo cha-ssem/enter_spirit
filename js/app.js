@@ -235,6 +235,63 @@ const App = {
     }
   },
 
+  async fetchCloudLedger() {
+    if (!window.db || !window.FS || !window.FS.getDocs) return;
+
+    try {
+      const querySnapshot = await window.FS.getDocs(window.FS.collection(window.db, "ledger"));
+      if (!querySnapshot || querySnapshot.empty) return;
+
+      const cloudLedger = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        cloudLedger.push({ ...data, id: docSnap.id || data.id });
+      });
+
+      if (cloudLedger.length > 0) {
+        cloudLedger.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+        this.ledger = cloudLedger;
+        StorageService.saveLedger(this.ledger);
+        if (this.currentTab === "ledger") this.renderLedger();
+      }
+    } catch (err) {
+      console.warn("Firestore ledger 클라우드 DB 로딩 예외 (로컬 Fallback 유지):", err);
+    }
+  },
+
+  // 💡 XSS(Cross-Site Scripting) 방어 헬퍼 함수
+  escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str).replace(/[&<>"']/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+  },
+
+  // 💡 비회원(guest) 대상 민감 개인정보(전화번호/이메일/카톡) 자동 마스킹 헬퍼
+  maskPhone(phone) {
+    if (!phone) return "";
+    if (this.currentRole !== "guest") return phone;
+    return phone.replace(/(\d{2,3})[-.]?(\d{3,4})[-.]?(\d{4})/, "$1-****-$3");
+  },
+
+  maskEmail(email) {
+    if (!email) return "";
+    if (this.currentRole !== "guest") return email;
+    const parts = email.split("@");
+    if (parts.length !== 2) return email;
+    const name = parts[0];
+    const visibleLen = Math.min(2, Math.max(1, Math.floor(name.length / 2)));
+    const maskedName = name.slice(0, visibleLen) + "*".repeat(Math.max(3, name.length - visibleLen));
+    return `${maskedName}@${parts[1]}`;
+  },
+
+  maskKakao(kakaoId) {
+    if (!kakaoId) return "";
+    if (this.currentRole !== "guest") return kakaoId;
+    if (kakaoId.length <= 2) return kakaoId + "***";
+    return kakaoId.slice(0, 2) + "*".repeat(Math.max(3, kakaoId.length - 2));
+  },
+
   setAccentColor(primaryHex, darkHex) {
     document.documentElement.style.setProperty("--color-primary", primaryHex);
     document.documentElement.style.setProperty("--color-primary-dark", darkHex || primaryHex);
@@ -504,34 +561,34 @@ const App = {
         <span class="corner-square"></span>
         <div>
           <div style="display: flex; gap: 14px; margin-bottom: 14px;">
-            <img src="${m.avatarUrl}" alt="${m.name}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
+            <img src="${this.escapeHtml(m.avatarUrl)}" alt="${this.escapeHtml(m.name)}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
             <div>
               <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span style="font-size: 18px; font-weight: 700; line-height: 1;">${m.name}</span>
+                <span style="font-size: 18px; font-weight: 700; line-height: 1;">${this.escapeHtml(m.name)}</span>
                 <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff; height: 22px; padding: 0 8px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${m.cohort}기</span>
                 <span class="pill-tag-nvidia" style="background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 22px; padding: 0 8px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${this.getRoleName(m.role)}</span>
                 ${m.pageURL && m.pageURL.trim() !== '' ? `
-                  <a href="${m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 22px; min-height: 22px; padding: 0 9px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; border-radius: 4px; box-sizing: border-box; line-height: 1;">
+                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 22px; min-height: 22px; padding: 0 9px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; border-radius: 4px; box-sizing: border-box; line-height: 1;">
                     🌐 홈페이지 방문 →
                   </a>
                 ` : ''}
               </div>
-              ${m.company ? `<div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 2px;">${m.company}</div>` : ''}
+              ${m.company ? `<div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 2px;">${this.escapeHtml(m.company)}</div>` : ''}
               ${m.industry ? `
                 <div style="font-size: 12.5px; margin-top: 2px; color: var(--color-mute);">
-                  ${m.industryIcon || ''} ${m.industry}
+                  ${this.escapeHtml(m.industryIcon || '')} ${this.escapeHtml(m.industry)}
                 </div>
               ` : ''}
             </div>
           </div>
-          ${m.summary ? `<p style="font-size: 14.5px; color: var(--color-body); margin: 12px 0; line-height: 1.5;">${m.summary}</p>` : ''}
+          ${m.summary ? `<p style="font-size: 14.5px; color: var(--color-body); margin: 12px 0; line-height: 1.5;">${this.escapeHtml(m.summary)}</p>` : ''}
         </div>
 
         <div style="border-top: 1px solid var(--color-hairline); padding-top: 12px; font-size: 13.5px; color: var(--color-mute); display: flex; flex-direction: column; gap: 4px;">
-          ${m.location ? `<div>📍 ${m.location}</div>` : ''}
-          ${m.phone ? `<div>📞 ${m.phone}</div>` : ''}
-          ${m.kakaoId ? `<div>💬 카톡: <strong style="color: var(--color-ink);">${m.kakaoId}</strong></div>` : ''}
-          ${(m.Pemail || m.googleEmail) ? `<div>📧 이메일: <strong style="color: var(--color-ink);">${m.Pemail || m.googleEmail}</strong></div>` : ''}
+          ${m.location ? `<div>📍 ${this.escapeHtml(m.location)}</div>` : ''}
+          ${m.phone ? `<div>📞 ${this.escapeHtml(this.maskPhone(m.phone))} ${this.currentRole === 'guest' ? '<span style="font-size: 11px; color: #94a3b8;">(로그인 시 공개)</span>' : ''}</div>` : ''}
+          ${m.kakaoId ? `<div>💬 카톡: <strong style="color: var(--color-ink);">${this.escapeHtml(this.maskKakao(m.kakaoId))}</strong></div>` : ''}
+          ${(m.Pemail || m.googleEmail) ? `<div>📧 이메일: <strong style="color: var(--color-ink);">${this.escapeHtml(this.maskEmail(m.Pemail || m.googleEmail))}</strong></div>` : ''}
         </div>
       </div>
     `).join("");
@@ -570,27 +627,27 @@ const App = {
               ` : ''}
             </div>
 
-            <h3 style="font-size: 20px; margin: 6px 0; font-weight: 700;">${l.title}</h3>
+            <h3 style="font-size: 20px; margin: 6px 0; font-weight: 700;">${this.escapeHtml(l.title)}</h3>
             <div style="font-size: 13.5px; color: var(--color-mute); margin-bottom: 8px;">
-              <strong style="color: var(--color-ink);">${l.speaker}</strong> | 📅 ${l.date} | 📍 ${l.location}
+              <strong style="color: var(--color-ink);">${this.escapeHtml(l.speaker)}</strong> | 📅 ${this.escapeHtml(l.date)} | 📍 ${this.escapeHtml(l.location)}
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
               <div style="font-size: 12.5px; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-mute); border: 1px solid var(--color-hairline);">
-                이력: ${l.speakerBio}
+                이력: ${this.escapeHtml(l.speakerBio)}
               </div>
               ${l.speakerURL && l.speakerURL.trim() !== '' ? `
-                <a href="${l.speakerURL.startsWith('http') ? l.speakerURL : 'https://' + l.speakerURL}" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; font-weight: 700; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-primary); border: 1px solid var(--color-hairline); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                <a href="${this.escapeHtml(l.speakerURL.startsWith('http') ? l.speakerURL : 'https://' + l.speakerURL)}" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; font-weight: 700; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-primary); border: 1px solid var(--color-hairline); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                   🔗 강사 소속 및 활동사항 →
                 </a>
               ` : ''}
             </div>
-            <p style="font-size: 14.5px; color: var(--color-body); margin: 0; line-height: 1.5;">${l.description}</p>
+            <p style="font-size: 14.5px; color: var(--color-body); margin: 0; line-height: 1.5;">${this.escapeHtml(l.description)}</p>
           </div>
 
           <!-- 2열 (오른쪽): DOWNLOAD MATERIAL (강의자료 업로드 시에만 표출) 및 액션 단추 -->
           <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; flex-shrink: 0; min-width: 180px;">
             ${(l.materialUrl && l.materialUrl.trim() !== '') ? `
-              <button class="btn btn-outline btn-sm" style="padding: 9px 16px; font-size: 13px; font-weight: 700; width: 100%; max-width: 200px; justify-content: center;" onclick="App.downloadMaterial('${l.title}', '${l.materialUrl}')">
+              <button class="btn btn-outline btn-sm" style="padding: 9px 16px; font-size: 13px; font-weight: 700; width: 100%; max-width: 200px; justify-content: center;" onclick="App.downloadMaterial('${this.escapeHtml(l.title)}', '${this.escapeHtml(l.materialUrl)}')">
                 📁 DOWNLOAD MATERIAL
               </button>
             ` : ''}
@@ -939,6 +996,11 @@ const App = {
 
     if (!username || !password || !name || !company || !phone || !kakaoId) {
       this.showToast("⚠️ 필수 정보(희망 아이디, 비밀번호, 성명, 회사명, 연락처, 단톡방 프로필 명)를 모두 입력해 주세요.");
+      return;
+    }
+
+    if (password.length < 6) {
+      this.showToast("⚠️ 계정 보안을 위해 비밀번호는 최소 6자 이상으로 설정해 주세요.");
       return;
     }
 
@@ -1797,33 +1859,33 @@ const App = {
 
       return `
         <tr>
-          <td style="white-space: nowrap;">${item.date}</td>
+          <td style="white-space: nowrap;">${this.escapeHtml(item.date)}</td>
           <td>
             <span class="pill-tag-nvidia" style="background: ${badgeBg}; color: ${badgeColor}; font-size: 11px; padding: 3px 8px; border-radius: 4px;">
               ${badgeLabel}
             </span>
           </td>
           <td>
-            <strong>${item.name}</strong>
-            ${item.location && item.location !== '-' ? `<br><span style="font-size: 11.5px; color: var(--color-mute);">📍 ${item.location}</span>` : ''}
+            <strong>${this.escapeHtml(item.name)}</strong>
+            ${item.location && item.location !== '-' ? `<br><span style="font-size: 11.5px; color: var(--color-mute);">📍 ${this.escapeHtml(item.location)}</span>` : ''}
           </td>
           <td>
-            ${item.item}
-            ${item.attendees && item.attendees !== '-' ? ` <span style="font-size: 11.5px; color: #4f46e5; font-weight: 700;">(👥 ${item.attendees})</span>` : ''}
+            ${this.escapeHtml(item.item)}
+            ${item.attendees && item.attendees !== '-' ? ` <span style="font-size: 11.5px; color: #4f46e5; font-weight: 700;">(👥 ${this.escapeHtml(item.attendees)})</span>` : ''}
           </td>
           <td style="font-weight: 700; color: ${isIncome ? '#16a34a' : '#dc2626'}; white-space: nowrap;">
             ${isIncome ? '+' : '-'}${item.amount.toLocaleString()}원
           </td>
           <td>
             ${item.receiptUrl ? `
-              <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="App.openReceiptZoomModal('${item.receiptUrl}', '${item.item}')">
+              <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="App.openReceiptZoomModal('${this.escapeHtml(item.receiptUrl)}', '${this.escapeHtml(item.item)}')">
                 🧾 영수증
               </button>
             ` : '<span style="color: #cbd5e1; font-size: 12px;">-</span>'}
           </td>
-          <td style="color: var(--color-mute); font-size: 12.5px;">${item.note || '-'}</td>
+          <td style="color: var(--color-mute); font-size: 12.5px;">${this.escapeHtml(item.note || '-')}</td>
           <td>
-            <button class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; border-color: #ef4444; color: #ef4444;" onclick="App.deleteLedgerItem('${item.id}')">
+            <button class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; border-color: #ef4444; color: #ef4444;" onclick="App.deleteLedgerItem('${this.escapeHtml(item.id)}')">
               🗑️
             </button>
           </td>
