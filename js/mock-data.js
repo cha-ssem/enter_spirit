@@ -215,33 +215,55 @@ const INITIAL_LECTURES = [
 const INITIAL_LEDGER = [
   {
     id: "led-01",
-    date: "2026-09-03",
+    date: "2026-09-01",
     type: "sponsorship",
-    name: "박서연 관리자",
     category: "찬조금",
+    name: "박서연 관리자",
     item: "13기 개강 기념 찬조금",
-    amount: 1000000,
-    note: "13기 첫 개강 응원 찬조"
+    amount: 500000,
+    location: "-",
+    attendees: "-",
+    note: "13기 원우회 발전 찬조금",
+    receiptUrl: ""
   },
   {
     id: "led-02",
-    date: "2026-09-03",
-    type: "sponsorship",
-    name: "김민준 임원",
-    category: "찬조물품",
-    item: "고급 와인 10병",
-    amount: 500000,
-    note: "환영 만찬 와인 찬조"
+    date: "2026-09-02",
+    type: "fee",
+    category: "정회원 회비",
+    name: "김민준",
+    item: "김민준 원우 2026-2학기 정회원 회비",
+    amount: 100000,
+    location: "-",
+    attendees: "-",
+    note: "회비 납부 완료 (자동 연동)",
+    receiptUrl: ""
   },
   {
     id: "led-03",
     date: "2026-09-03",
-    type: "expense",
-    name: "13기 총무팀",
-    category: "식대/네트워킹",
-    item: "1주차 개강 환영 만찬 비용",
-    amount: 850000,
-    note: "강남 프레스티지 레스토랑 대관"
+    type: "expense_dining",
+    category: "회식/네트워킹 지출",
+    name: "13기 집행부",
+    item: "1주차 개강 환영 회식 및 네트워킹",
+    amount: 320000,
+    location: "부산 해운대 센텀 한우 명가",
+    attendees: "18명",
+    note: "원우 18명 참석 회식비 결제",
+    receiptUrl: "images/industry_it.jpg"
+  },
+  {
+    id: "led-04",
+    date: "2026-09-05",
+    type: "interest",
+    category: "예금 이자",
+    name: "신한은행 통장",
+    item: "9월 포럼 통장 예금 이자 결산",
+    amount: 4500,
+    location: "-",
+    attendees: "-",
+    note: "월별 결산 이자 수입",
+    receiptUrl: ""
   }
 ];
 
@@ -306,6 +328,15 @@ class StorageService {
 
   static saveLedger(ledger) {
     localStorage.setItem("enterprise_13th_ledger", JSON.stringify(ledger));
+  }
+
+  static getInitialBalance() {
+    const val = localStorage.getItem("enterprise_13th_initial_balance");
+    return val !== null ? parseInt(val, 10) : 0;
+  }
+
+  static saveInitialBalance(amount) {
+    localStorage.setItem("enterprise_13th_initial_balance", amount.toString());
   }
 
   static getCurrentUserRole() {

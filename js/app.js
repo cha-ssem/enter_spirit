@@ -18,6 +18,7 @@ const App = {
     this.members = StorageService.getMembers();
     this.lectures = StorageService.getLectures();
     this.ledger = StorageService.getLedger();
+    this.initialBalance = StorageService.getInitialBalance();
 
     // 브라우저 새로고침 시에도 사용자의 세션(로그인 또는 로그아웃 상태) 100% 완벽 보존
     const savedUserId = StorageService.getCurrentUserId();
@@ -38,10 +39,11 @@ const App = {
     this.updateRoleUI();
     this.renderCurrentTab();
 
-    // 💡 Firebase Firestore 클라우드 DB의 최신 회원 데이터 및 강의 커리큘럼 데이터 비동기 동기화
+    // 💡 Firebase Firestore 클라우드 DB의 최신 회원 데이터, 강의 커리큘럼, 장부 데이터 비동기 동기화
     setTimeout(() => {
       this.fetchCloudMembers();
       this.fetchCloudLectures();
+      this.fetchCloudLedger();
     }, 300);
   },
 
@@ -1526,31 +1528,21 @@ const App = {
   },
 
   async toggleFeeStatus(memberId) {
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 회비 납부 상태 관리 권한이 필요합니다.");
+      return;
+    }
+
     const m = this.members.find(item => item.id === memberId);
     if (!m) return;
 
     if (!m.feePaid) {
-      // 💡 회비 미납 -> 납부완료 전환 시: 반드시 feeDate가 입력되어야만 납부 처리 진행
-      const dateInput = document.getElementById(`feeDateInput_${memberId}`);
-      const inputVal = dateInput ? dateInput.value.trim() : "";
-
-      if (!inputVal) {
-        alert("⚠️ 회비 납부일자를 정확히 입력하셔야 납부 처리 완료로 전환됩니다.");
-        return;
-      }
-
-      m.feePaid = true;
-      m.feeDate = inputVal;
-
-      // 회비 납부 완료 시 일반회원은 정회원으로 자동 승인 전환
-      if (m.role === "regular") {
-        m.role = "full";
-        this.showToast(`🎉 ${m.name} 회원의 회비 납부 완료(${inputVal})로 정회원(full) 승인 처리되었습니다.`);
-      } else {
-        this.showToast(`🎉 ${m.name} 회원의 회비 납부 완료(${inputVal})가 처리되었습니다.`);
-      }
+      // 💡 미납 -> 납부완료 전환 시: 회비 납부 설정 팝업 모달 오픈 (기본 100,000원 금액 수정 가능)
+      this.openFeePayModal(m);
     } else {
       // 납부완료 -> 미납 전환 시
+      if (!confirm(`${m.name} 회원의 회비 납부 상태를 [미납]으로 전환하시겠습니까?`)) return;
+
       m.feePaid = false;
       m.feeDate = "-";
       if (m.role === "full") {
@@ -1559,94 +1551,402 @@ const App = {
       } else {
         this.showToast(`${m.name} 회원이 회비 미납 상태로 전환되었습니다.`);
       }
+
+      StorageService.saveMembers(this.members);
+
+      // Firestore 동기화
+      if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+        try {
+          await window.FS.setDoc(window.FS.doc(window.db, "members", memberId), { 
+            feePaid: false, 
+            feeDate: "-", 
+            role: m.role 
+          }, { merge: true });
+        } catch (err) {
+          console.warn("Firestore 회비 미납 전환 시도 오류:", err);
+        }
+      }
+
+      this.renderAdmin();
+    }
+  },
+
+  openFeePayModal(member) {
+    const modal = document.getElementById("feePayModal");
+    if (!modal) return;
+
+    document.getElementById("feePayMemberId").value = member.id;
+    document.getElementById("feePayMemberName").value = `${member.name} (${member.cohort}기 - ${member.company || '13기 원우'})`;
+    document.getElementById("feePayAmount").value = "100000"; // 💡 기본 정회원 회비 100,000원
+    document.getElementById("feePayDate").value = new Date().toISOString().split("T")[0];
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  },
+
+  closeFeePayModal() {
+    const modal = document.getElementById("feePayModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+  },
+
+  async confirmFeePayment(e) {
+    if (e) e.preventDefault();
+
+    const memberId = document.getElementById("feePayMemberId").value;
+    const amount = parseInt(document.getElementById("feePayAmount").value, 10) || 100000;
+    const feeDate = document.getElementById("feePayDate").value;
+
+    const m = this.members.find(item => item.id === memberId);
+    if (!m) return;
+
+    m.feePaid = true;
+    m.feeDate = feeDate;
+
+    if (m.role === "regular") {
+      m.role = "full";
     }
 
     StorageService.saveMembers(this.members);
 
-    // 💡 입력된 feeDate값과 납부상태 feePaid를 해당 회원정보 Firebase Firestore 데이터베이스에 실시간 업데이트!
+    // 1) Firestore members 컬렉션 업데이트
     if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
       try {
         await window.FS.setDoc(window.FS.doc(window.db, "members", memberId), { 
-          feePaid: m.feePaid, 
-          feeDate: m.feeDate, 
+          feePaid: true, 
+          feeDate: feeDate, 
           role: m.role 
         }, { merge: true });
-        console.log(`Firebase Firestore: ${m.name} 회비(feePaid: ${m.feePaid}, feeDate: ${m.feeDate}) 클라우드 DB 저장 성공`);
       } catch (err) {
-        console.warn("Firestore 회비 처리 시도 오류:", err);
+        console.warn("Firestore 회원 회비 상태 업데이트 오류:", err);
       }
     }
 
+    // 2) 💡 정회원 회비 납부 내역을 장부(ledger) 수입 항목으로 자동 기록 연동!
+    const feeLedgerEntry = {
+      id: `led-fee-${Date.now()}`,
+      date: feeDate,
+      type: "fee",
+      category: "정회원 회비",
+      name: m.name,
+      item: `${m.name} 원우 정회원 회비 납부`,
+      amount: amount,
+      location: "-",
+      attendees: "-",
+      note: `회원관리 탭 자동 연동 (${m.cohort}기)`,
+      receiptUrl: ""
+    };
+
+    this.ledger.unshift(feeLedgerEntry);
+    StorageService.saveLedger(this.ledger);
+
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "ledger", feeLedgerEntry.id), feeLedgerEntry);
+      } catch (err) {
+        console.warn("Firestore 회비 수입 장부 저장 오류:", err);
+      }
+    }
+
+    this.closeFeePayModal();
+    this.showToast(`🎉 ${m.name} 회원의 회비 ${amount.toLocaleString()}원 납부 처리 및 장부 수입이 자동 등록되었습니다!`);
     this.renderAdmin();
+    this.renderLedger();
+  },
+
+  /* 6. LEDGER METHODS */
+  handleLedgerTypeChange(type) {
+    const expenseOpts = document.getElementById("ledgerExpenseOptions");
+    if (!expenseOpts) return;
+    if (type === "expense_dining") {
+      expenseOpts.style.display = "grid";
+    } else {
+      expenseOpts.style.display = "none";
+    }
   },
 
   renderLedger() {
     const ledgerTable = document.getElementById("ledgerTableBody");
     if (!ledgerTable) return;
 
-    let totalSponsorship = 0;
+    const filterType = document.getElementById("ledgerFilterType") ? document.getElementById("ledgerFilterType").value : "all";
+    const searchQuery = document.getElementById("ledgerSearchInput") ? document.getElementById("ledgerSearchInput").value.trim().toLowerCase() : "";
+
+    let totalIncome = 0;
     let totalExpense = 0;
 
     this.ledger.forEach(item => {
-      if (item.type === "sponsorship") {
-        totalSponsorship += item.amount;
+      const isIncome = item.type === "sponsorship" || item.type === "fee" || item.type === "interest";
+      if (isIncome) {
+        totalIncome += item.amount;
       } else {
         totalExpense += item.amount;
       }
     });
 
-    const balance = totalSponsorship - totalExpense;
+    const initBalance = this.initialBalance || 0;
+    const balance = initBalance + totalIncome - totalExpense;
 
-    document.getElementById("totalSponsorshipAmount").textContent = `${totalSponsorship.toLocaleString()}원`;
+    const initialEl = document.getElementById("initialBalanceAmount");
+    if (initialEl) initialEl.textContent = `${initBalance.toLocaleString()}원`;
+    document.getElementById("totalSponsorshipAmount").textContent = `${totalIncome.toLocaleString()}원`;
     document.getElementById("totalExpenseAmount").textContent = `${totalExpense.toLocaleString()}원`;
     document.getElementById("ledgerBalanceAmount").textContent = `${balance.toLocaleString()}원`;
 
-    ledgerTable.innerHTML = this.ledger.map(item => `
-      <tr>
-        <td>${item.date}</td>
-        <td>
-          <span style="color: ${item.type === 'sponsorship' ? '#16a34a' : '#dc2626'}; font-weight: 700;">
-            ${item.type === 'sponsorship' ? '🟢 찬조/수입' : '🔴 지출'}
-          </span>
-        </td>
-        <td><strong>${item.name}</strong> (${item.category})</td>
-        <td>${item.item}</td>
-        <td style="font-weight: 700;">${item.amount.toLocaleString()}원</td>
-        <td style="color: var(--color-mute); font-size: 13px;">${item.note || '-'}</td>
-      </tr>
-    `).join("");
+    // 필터링 및 검색어 적용
+    const filteredLedger = this.ledger.filter(item => {
+      if (filterType !== "all" && item.type !== filterType) return false;
+      if (searchQuery) {
+        const text = `${item.name || ''} ${item.item || ''} ${item.location || ''} ${item.note || ''} ${item.category || ''}`.toLowerCase();
+        if (!text.includes(searchQuery)) return false;
+      }
+      return true;
+    });
+
+    if (filteredLedger.length === 0) {
+      ledgerTable.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 36px; color: var(--color-mute);">조건에 해당하는 장부 내역이 없습니다.</td></tr>`;
+      return;
+    }
+
+    ledgerTable.innerHTML = filteredLedger.map(item => {
+      const isIncome = item.type === "sponsorship" || item.type === "fee" || item.type === "interest";
+      let badgeLabel = "🟢 찬조금";
+      let badgeBg = "#dcfce7";
+      let badgeColor = "#15803d";
+
+      if (item.type === "fee") {
+        badgeLabel = "🟢 정회원 회비";
+        badgeBg = "#dbeafe";
+        badgeColor = "#1e40af";
+      } else if (item.type === "interest") {
+        badgeLabel = "🟢 예금 이자";
+        badgeBg = "#fef3c7";
+        badgeColor = "#92400e";
+      } else if (item.type === "expense_dining") {
+        badgeLabel = "🔴 네트워킹/회식";
+        badgeBg = "#fee2e2";
+        badgeColor = "#991b1b";
+      } else if (item.type === "expense_gift") {
+        badgeLabel = "🔴 선물/행사";
+        badgeBg = "#fce7f3";
+        badgeColor = "#9d174d";
+      } else if (item.type === "expense_other" || item.type === "expense") {
+        badgeLabel = "🔴 기타 지출";
+        badgeBg = "#fee2e2";
+        badgeColor = "#b91c1c";
+      }
+
+      return `
+        <tr>
+          <td style="white-space: nowrap;">${item.date}</td>
+          <td>
+            <span class="pill-tag-nvidia" style="background: ${badgeBg}; color: ${badgeColor}; font-size: 11px; padding: 3px 8px; border-radius: 4px;">
+              ${badgeLabel}
+            </span>
+          </td>
+          <td>
+            <strong>${item.name}</strong>
+            ${item.location && item.location !== '-' ? `<br><span style="font-size: 11.5px; color: var(--color-mute);">📍 ${item.location}</span>` : ''}
+          </td>
+          <td>
+            ${item.item}
+            ${item.attendees && item.attendees !== '-' ? ` <span style="font-size: 11.5px; color: #4f46e5; font-weight: 700;">(👥 ${item.attendees})</span>` : ''}
+          </td>
+          <td style="font-weight: 700; color: ${isIncome ? '#16a34a' : '#dc2626'}; white-space: nowrap;">
+            ${isIncome ? '+' : '-'}${item.amount.toLocaleString()}원
+          </td>
+          <td>
+            ${item.receiptUrl ? `
+              <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="App.openReceiptZoomModal('${item.receiptUrl}', '${item.item}')">
+                🧾 영수증
+              </button>
+            ` : '<span style="color: #cbd5e1; font-size: 12px;">-</span>'}
+          </td>
+          <td style="color: var(--color-mute); font-size: 12.5px;">${item.note || '-'}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; border-color: #ef4444; color: #ef4444;" onclick="App.deleteLedgerItem('${item.id}')">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
   },
 
-  addLedgerEntry() {
-    const type = document.getElementById("ledgerType").value;
-    const name = document.getElementById("ledgerName").value;
-    const category = document.getElementById("ledgerCategory").value;
-    const item = document.getElementById("ledgerItem").value;
-    const amount = parseInt(document.getElementById("ledgerAmount").value, 10);
-    const note = document.getElementById("ledgerNote").value;
+  async addLedgerEntry(e) {
+    if (e) e.preventDefault();
 
-    if (!name || !item || isNaN(amount)) {
-      alert("필수 항목을 입력하세요.");
+    const type = document.getElementById("ledgerType").value;
+    const name = document.getElementById("ledgerName").value.trim();
+    const item = document.getElementById("ledgerItem").value.trim();
+    const amount = parseInt(document.getElementById("ledgerAmount").value, 10);
+    const location = document.getElementById("ledgerLocation") ? document.getElementById("ledgerLocation").value.trim() : "";
+    const attendees = document.getElementById("ledgerAttendees") ? document.getElementById("ledgerAttendees").value.trim() : "";
+    const note = document.getElementById("ledgerNote").value.trim();
+    const receiptFileInput = document.getElementById("ledgerReceiptFile");
+
+    if (!name || !item || isNaN(amount) || amount <= 0) {
+      this.showToast("⚠️ 올바른 성명, 내역 설명 및 금액을 입력해 주세요.");
       return;
+    }
+
+    let category = "기타 지출";
+    if (type === "sponsorship") category = "찬조금";
+    else if (type === "fee") category = "정회원 회비";
+    else if (type === "interest") category = "예금 이자";
+    else if (type === "expense_dining") category = "회식/네트워킹 지출";
+    else if (type === "expense_gift") category = "선물/행사 지출";
+
+    let receiptUrl = "";
+
+    // 💡 영수증 이미지 첨부 시 HTML5 Canvas로 경량화 (.jpg 300px) 압축 변환
+    if (receiptFileInput && receiptFileInput.files && receiptFileInput.files[0]) {
+      const file = receiptFileInput.files[0];
+      receiptUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const maxDim = 400;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.75));
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
     const newEntry = {
       id: `led-${Date.now()}`,
       date: new Date().toISOString().split("T")[0],
       type,
-      name,
       category,
+      name,
       item,
       amount,
-      note
+      location: location || "-",
+      attendees: attendees || "-",
+      note,
+      receiptUrl
     };
 
     this.ledger.unshift(newEntry);
     StorageService.saveLedger(this.ledger);
-    this.showToast("장부 내역이 추가되었습니다.");
+
+    // Firebase Firestore ledger 컬렉션 동기화
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "ledger", newEntry.id), newEntry);
+      } catch (err) {
+        console.warn("Firestore ledger 내역 저장 경고:", err);
+      }
+    }
+
+    this.showToast("🎉 장부 내역과 경량화 영수증이 클라우드 DB에 동기화되었습니다!");
     this.renderLedger();
 
     document.getElementById("ledgerForm").reset();
+  },
+
+  async deleteLedgerItem(id) {
+    if (!confirm("해당 장부 항목을 정말 삭제하시겠습니까?")) return;
+
+    this.ledger = this.ledger.filter(item => item.id !== id);
+    StorageService.saveLedger(this.ledger);
+
+    if (window.db && window.FS && window.FS.deleteDoc && window.FS.doc) {
+      try {
+        await window.FS.deleteDoc(window.FS.doc(window.db, "ledger", id));
+      } catch (err) {
+        console.warn("Firestore ledger 삭제 경고:", err);
+      }
+    }
+
+    this.showToast("🗑️ 장부 항목이 삭제되었습니다.");
+    this.renderLedger();
+  },
+
+  /* 이월 잔고 모달 관련 */
+  openInitialBalanceModal() {
+    const modal = document.getElementById("initialBalanceModal");
+    if (!modal) return;
+
+    const input = document.getElementById("initialBalanceInput");
+    if (input) input.value = this.initialBalance || 0;
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  },
+
+  closeInitialBalanceModal() {
+    const modal = document.getElementById("initialBalanceModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+  },
+
+  async saveInitialBalance(e) {
+    if (e) e.preventDefault();
+
+    const val = parseInt(document.getElementById("initialBalanceInput").value, 10) || 0;
+    this.initialBalance = val;
+    StorageService.saveInitialBalance(val);
+
+    // Firestore settings/ledger_config 저장
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "settings", "ledger_config"), { initialBalance: val }, { merge: true });
+      } catch (err) {
+        console.warn("Firestore 이월 잔고 저장 경고:", err);
+      }
+    }
+
+    this.closeInitialBalanceModal();
+    this.showToast(`🎉 이월 잔고 ${val.toLocaleString()}원이 설정되었습니다!`);
+    this.renderLedger();
+  },
+
+  /* 영수증 팝업 모달 관련 */
+  openReceiptZoomModal(url, title) {
+    const modal = document.getElementById("receiptZoomModal");
+    const img = document.getElementById("receiptZoomImage");
+    const titleEl = document.getElementById("receiptZoomTitle");
+    if (!modal || !img) return;
+
+    img.src = url;
+    if (titleEl) titleEl.textContent = `🧾 ${title} 영수증`;
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  },
+
+  closeReceiptZoomModal() {
+    const modal = document.getElementById("receiptZoomModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
   },
 
   showToast(message) {

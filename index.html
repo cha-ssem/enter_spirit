@@ -455,22 +455,33 @@
 
 
       <!-- Ledger Section -->
-      <h3 style="font-size: 20px; margin-top: 40px; margin-bottom: 16px;">💰 네트워킹 찬조 & 회식 지출 장부</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="font-size: 20px; margin: 0;">💰 네트워킹 찬조 & 회식·행사 지출 장부</h3>
+        <button class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;" onclick="App.openInitialBalanceModal()">
+          ⚙️ 이월/기본 잔고 설정
+        </button>
+      </div>
 
-      <div class="ledger-summary-grid">
+      <!-- 4-Card Summary Grid -->
+      <div class="ledger-summary-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
         <div class="ledger-summary-card">
           <span class="corner-square"></span>
-          <div style="font-size: 13px; color: var(--color-mute);">총 찬조금 수입</div>
+          <div style="font-size: 13px; color: var(--color-mute);">초기 이월 잔고</div>
+          <div id="initialBalanceAmount" class="stat-num-nvidia" style="color: #3b82f6;">0원</div>
+        </div>
+        <div class="ledger-summary-card">
+          <span class="corner-square"></span>
+          <div style="font-size: 13px; color: var(--color-mute);">총 수입 (회비+찬조+이자)</div>
           <div id="totalSponsorshipAmount" class="stat-num-nvidia" style="color: #16a34a;">0원</div>
         </div>
         <div class="ledger-summary-card">
           <span class="corner-square"></span>
-          <div style="font-size: 13px; color: var(--color-mute);">총 회식/진행 지출</div>
+          <div style="font-size: 13px; color: var(--color-mute);">총 지출 (회식+선물+기타)</div>
           <div id="totalExpenseAmount" class="stat-num-nvidia" style="color: #dc2626;">0원</div>
         </div>
         <div class="ledger-summary-card balance">
           <span class="corner-square"></span>
-          <div style="font-size: 13px; opacity: 0.8;">장부 남은 잔액</div>
+          <div style="font-size: 13px; opacity: 0.85;">장부 남은 잔액</div>
           <div id="ledgerBalanceAmount" class="stat-num-nvidia">0원</div>
         </div>
       </div>
@@ -478,58 +489,85 @@
       <!-- Ledger Form Card -->
       <div class="product-card" style="margin-bottom: 32px;">
         <span class="corner-square"></span>
-        <h4 style="font-size: 18px; margin-bottom: 16px;">➕ 수입/지출 내역 등록</h4>
+        <h4 style="font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          ➕ 수입 / 지출 / 찬조 / 이자 내역 등록
+        </h4>
         <form id="ledgerForm">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">구분</label>
-              <select id="ledgerType" class="form-input">
-                <option value="sponsorship">🟢 찬조 / 수입</option>
-                <option value="expense">🔴 지출 (회식/진행비)</option>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">구분 항목 *</label>
+              <select id="ledgerType" class="form-input" onchange="App.handleLedgerTypeChange(this.value)">
+                <option value="sponsorship">🟢 찬조금 수입 (찬조자/찬조물품)</option>
+                <option value="fee">🟢 정회원 회비 수입</option>
+                <option value="interest">🟢 예금 이자 수입</option>
+                <option value="expense_dining">🔴 네트워킹/회식 지출 (영수증, 장소, 인원)</option>
+                <option value="expense_gift">🔴 수료식 선물 및 행사 지출 (영수증)</option>
+                <option value="expense_other">🔴 기타 운영 지출</option>
               </select>
             </div>
             <div>
-              <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명
-                / 집행 주체</label>
-              <input type="text" id="ledgerName" class="form-input" placeholder="예: 박서연 관리자" required />
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명 / 찬조자 / 집행 주체 *</label>
+              <input type="text" id="ledgerName" class="form-input" placeholder="예: 박서연 관리자, 김민준 원우, 13기 집행부" required />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">분류
-                항목</label>
-              <input type="text" id="ledgerCategory" class="form-input" placeholder="예: 찬조금, 식대" required />
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">내역 설명 *</label>
+              <input type="text" id="ledgerItem" class="form-input" placeholder="예: 13기 개강 환영회, 9월 결산 이자 수입" required />
             </div>
             <div>
-              <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">내역
-                설명</label>
-              <input type="text" id="ledgerItem" class="form-input" placeholder="예: 개강 기념 찬조금" required />
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-            <div>
-              <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">금액
-                (원)</label>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">금액 (원) *</label>
               <input type="number" id="ledgerAmount" class="form-input" placeholder="100000" required />
             </div>
+          </div>
+
+          <!-- 동적 지출 상세 옵션 구역 (회식 장소, 인원) -->
+          <div id="ledgerExpenseOptions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">비고</label>
-              <input type="text" id="ledgerNote" class="form-input" placeholder="비고..." />
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📍 회식 장소 / 지출처 (선택)</label>
+              <input type="text" id="ledgerLocation" class="form-input" placeholder="예: 부산 해운대 센텀 한우 명가" />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">👥 참여 인원 (선택)</label>
+              <input type="text" id="ledgerAttendees" class="form-input" placeholder="예: 18명" />
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-sm">
-            ➕ 장부 내역 기록
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🧾 영수증 이미지 첨부 (자동 경량화)</label>
+              <input type="file" id="ledgerReceiptFile" class="form-input" accept="image/*" style="padding: 6px 10px;" />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">💬 비고 및 상세 메모</label>
+              <input type="text" id="ledgerNote" class="form-input" placeholder="예: 와인 2병 별도 찬조 포함" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-sm" style="padding: 10px 24px; font-weight: 700;">
+            ➕ 장부 내역 등록 및 동기화
           </button>
         </form>
+      </div>
+
+      <!-- Ledger Search & Filter Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--color-hairline);">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <label style="font-size: 13px; font-weight: 700;">필터 구분:</label>
+          <select id="ledgerFilterType" class="form-input" style="padding: 5px 10px; font-size: 13px; width: auto;" onchange="App.renderLedger()">
+            <option value="all">전체 내역 보기</option>
+            <option value="sponsorship">🟢 찬조금 수입</option>
+            <option value="fee">🟢 정회원 회비 수입</option>
+            <option value="interest">🟢 예금 이자 수입</option>
+            <option value="expense_dining">🔴 회식/네트워킹 지출</option>
+            <option value="expense_gift">🔴 선물/행사 지출</option>
+            <option value="expense_other">🔴 기타 지출</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="text" id="ledgerSearchInput" class="form-input" style="padding: 5px 12px; font-size: 13px; width: 220px;" placeholder="성명, 장소, 내역 검색..." oninput="App.renderLedger()" />
+        </div>
       </div>
 
       <!-- Ledger Table -->
@@ -538,11 +576,13 @@
           <thead>
             <tr>
               <th>날짜</th>
-              <th>구분</th>
-              <th>성명/항목</th>
-              <th>내역 설명</th>
-              <th>금액</th>
-              <th>비고</th>
+              <th>구분 / 분류</th>
+              <th>성명 / 찬조자 / 장소</th>
+              <th>내역 설명 (인원)</th>
+              <th>금액 (원)</th>
+              <th>영수증</th>
+              <th>비고 및 메모</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody id="ledgerTableBody">
@@ -910,6 +950,66 @@
       <div id="mergeAccountModalBody">
         <!-- JavaScript 동적 미리보기 및 비교 테이블 렌더링 -->
       </div>
+    </div>
+  <!-- 💡 1. 정회원 회비 납부 금액 설정 팝업 모달 -->
+  <div id="feePayModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeFeePayModal()">
+    <div class="modal-content" style="max-width: 440px; width: 90%; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+        <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">🔑 회비 납부 처리 및 장부 자동 수입 연동</h4>
+        <button type="button" onclick="App.closeFeePayModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+      </div>
+      <form id="feePayForm" onsubmit="App.confirmFeePayment(event)">
+        <input type="hidden" id="feePayMemberId" />
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">원우 성명</label>
+          <input type="text" id="feePayMemberName" class="form-input" readonly style="background: #f1f5f9; font-weight: 700;" />
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">납부 회비 금액 (원) *</label>
+          <input type="number" id="feePayAmount" class="form-input" value="100000" placeholder="100000" required style="font-size: 16px; font-weight: 700; color: #16a34a;" />
+          <span style="font-size: 12px; color: var(--color-mute); margin-top: 4px; display: block;">💡 기본 100,000원으로 자동 설정되며 자유롭게 금액을 수정할 수 있습니다.</span>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">회비 납부 일자 *</label>
+          <input type="date" id="feePayDate" class="form-input" required />
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.closeFeePayModal()">취소</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a; font-weight: 700;">✅ 회비 납부 및 장부 자동 연동</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 💡 2. 이월 잔고 (초기 기본 잔액) 설정 팝업 모달 -->
+  <div id="initialBalanceModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeInitialBalanceModal()">
+    <div class="modal-content" style="max-width: 440px; width: 90%; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+        <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">⚙️ 초기 이월 잔고 설정</h4>
+        <button type="button" onclick="App.closeInitialBalanceModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+      </div>
+      <form id="initialBalanceForm" onsubmit="App.saveInitialBalance(event)">
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">이월/초기 기본 잔액 (원) *</label>
+          <input type="number" id="initialBalanceInput" class="form-input" placeholder="예: 500000" required style="font-size: 16px; font-weight: 700; color: #2563eb;" />
+          <span style="font-size: 12px; color: var(--color-mute); margin-top: 4px; display: block;">💡 설정한 이월 잔액이 장부 실시간 남은 잔액 계산의 기준금으로 반영됩니다.</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.closeInitialBalanceModal()">취소</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700;">💾 이월 잔고 저장 및 동기화</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 💡 3. 영수증 이미지 확대 보기 팝업 모달 -->
+  <div id="receiptZoomModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeReceiptZoomModal()">
+    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 20px; border-radius: 12px; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h4 id="receiptZoomTitle" style="font-size: 16px; font-weight: 700; margin: 0; color: var(--color-ink);">🧾 영수증 이미지 확대</h4>
+        <button type="button" onclick="App.closeReceiptZoomModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute);">&times;</button>
+      </div>
+      <img id="receiptZoomImage" src="" alt="영수증 이미지" style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: 8px; border: 1px solid var(--color-hairline);" />
     </div>
   </div>
 
