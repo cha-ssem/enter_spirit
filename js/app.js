@@ -1871,6 +1871,38 @@ const App = {
   async deleteLedgerItem(id) {
     if (!confirm("해당 장부 항목을 정말 삭제하시겠습니까?")) return;
 
+    const targetItem = this.ledger.find(item => item.id === id);
+    let affectedMember = null;
+
+    // 💡 1. 삭제 대상이 '정회원 회비' 항목인 경우, 해당 회원의 납부 상태를 자동으로 '미납'으로 원복
+    if (targetItem && (targetItem.type === "fee" || targetItem.category === "정회원 회비")) {
+      const memberName = targetItem.name ? targetItem.name.trim() : "";
+      affectedMember = this.members.find(m => m.name && m.name.trim() === memberName);
+
+      if (affectedMember) {
+        affectedMember.feePaid = false;
+        affectedMember.feeDate = "-";
+        if (affectedMember.role === "full") {
+          affectedMember.role = "regular";
+        }
+        StorageService.saveMembers(this.members);
+
+        // Firestore members 컬렉션 업데이트
+        if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+          try {
+            await window.FS.setDoc(window.FS.doc(window.db, "members", affectedMember.id), {
+              feePaid: false,
+              feeDate: "-",
+              role: affectedMember.role
+            }, { merge: true });
+          } catch (err) {
+            console.warn("Firestore 회원 미납 전환 경고:", err);
+          }
+        }
+      }
+    }
+
+    // 2. 장부 데이터베이스 및 목록에서 항목 삭제
     this.ledger = this.ledger.filter(item => item.id !== id);
     StorageService.saveLedger(this.ledger);
 
@@ -1882,7 +1914,13 @@ const App = {
       }
     }
 
-    this.showToast("🗑️ 장부 항목이 삭제되었습니다.");
+    if (affectedMember) {
+      this.showToast(`⚠️ 장부 회비 삭제로 인해 ${affectedMember.name} 회원의 상태가 [미납]으로 자동 전환되었습니다.`);
+    } else {
+      this.showToast("🗑️ 장부 항목이 삭제되었습니다.");
+    }
+
+    this.renderAdmin();
     this.renderLedger();
   },
 
