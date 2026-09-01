@@ -1216,6 +1216,285 @@ const App = {
     this.renderLedger();
   },
 
+  // 💡 헬퍼: 전화번호 하이픈 제거 및 숫자만 추출 (010-1234-5678 -> 01012345678)
+  normalizePhone(phone) {
+    if (!phone) return "";
+    return phone.toString().replace(/[^0-9]/g, "").trim();
+  },
+
+  // 💡 헬퍼: 이메일 소문자 정규화
+  normalizeEmail(email) {
+    if (!email) return "";
+    return email.toString().trim().toLowerCase();
+  },
+
+  // 💡 중복 회원 계정 쌍 감지 (전화번호 숫자열 일치 OR 이메일 일치)
+  findDuplicateAccountPairs() {
+    const pairs = [];
+    const visited = new Set();
+
+    for (let i = 0; i < this.members.length; i++) {
+      const m1 = this.members[i];
+      if (visited.has(m1.id)) continue;
+
+      const p1 = this.normalizePhone(m1.phone);
+      const e1 = this.normalizeEmail(m1.Pemail || m1.googleEmail);
+
+      for (let j = i + 1; j < this.members.length; j++) {
+        const m2 = this.members[j];
+        if (visited.has(m2.id)) continue;
+
+        const p2 = this.normalizePhone(m2.phone);
+        const e2 = this.normalizeEmail(m2.Pemail || m2.googleEmail);
+
+        let matchType = null;
+
+        // 1) 전화번호 하이픈 제거 후 9자리 이상 동일할 경우 (010-XXXX-XXXX vs 010XXXXXXXX)
+        if (p1 && p2 && p1.length >= 9 && p1 === p2) {
+          matchType = "전화번호 일치 (하이픈 무관)";
+        }
+        // 2) 이메일 주소 동일할 경우
+        else if (e1 && e2 && e1 === e2) {
+          matchType = "이메일 주소 일치";
+        }
+        // 3) 성명이 동일하고 (이메일 또는 전화번호 중 하나라도 동일/유사)
+        else if (m1.name && m2.name && m1.name.trim() === m2.name.trim()) {
+          if ((p1 && p2 && p1 === p2) || (e1 && e2 && e1 === e2)) {
+            matchType = "성명 및 연락처/이메일 동일";
+          }
+        }
+
+        if (matchType) {
+          pairs.push({
+            primary: m1,
+            secondary: m2,
+            matchReason: matchType
+          });
+          visited.add(m1.id);
+          visited.add(m2.id);
+          break;
+        }
+      }
+    }
+    return pairs;
+  },
+
+  openMergeAccountModal(primaryId, secondaryId) {
+    const modal = document.getElementById("mergeAccountModal");
+    const container = document.getElementById("mergeAccountModalBody");
+    if (!modal || !container) return;
+
+    modal.style.display = "flex";
+
+    let m1 = null;
+    let m2 = null;
+    let matchReason = "전화번호/이메일 일치 감지";
+
+    if (primaryId && secondaryId) {
+      m1 = this.members.find(m => m.id === primaryId);
+      m2 = this.members.find(m => m.id === secondaryId);
+    } else {
+      const duplicatePairs = this.findDuplicateAccountPairs();
+      if (duplicatePairs.length > 0) {
+        m1 = duplicatePairs[0].primary;
+        m2 = duplicatePairs[0].secondary;
+        matchReason = duplicatePairs[0].matchReason;
+      }
+    }
+
+    if (!m1 || !m2) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">중복 계정이 감지되지 않았습니다.</h4>
+          <p style="font-size: 14px; color: var(--color-mute); margin-bottom: 24px;">
+            현재 전화번호(하이픈 '-' 포함 및 미포함 비교) 또는 이메일이 동일한 중복 회원 계정이 없습니다.
+          </p>
+          <button class="btn btn-outline" onclick="App.closeMergeAccountModal()">확인 및 닫기</button>
+        </div>
+      `;
+      return;
+    }
+
+    this.renderMergePreviewUI(m1, m2, matchReason);
+  },
+
+  renderMergePreviewUI(m1, m2, matchReason) {
+    const container = document.getElementById("mergeAccountModalBody");
+    if (!container) return;
+
+    const m1IsGoogle = !!m1.googleUid;
+    const m2IsGoogle = !!m2.googleUid;
+
+    let defaultPrimaryId = m1.id;
+    let defaultSecondaryId = m2.id;
+
+    if (!m1IsGoogle && m2IsGoogle) {
+      defaultPrimaryId = m2.id;
+      defaultSecondaryId = m1.id;
+    }
+
+    container.innerHTML = `
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13.5px; color: #334155;">
+        🔍 <strong>중복 감지 사유</strong>: <span style="color: #6366f1; font-weight: 700;">${matchReason}</span>
+      </div>
+
+      <p style="font-size: 14px; color: var(--color-ink); margin-bottom: 12px; line-height: 1.5;">
+        아래 두 회원 정보의 상세 항목을 비교하시고, <strong>[유지할 대표 계정(Primary)]</strong>을 선택해 주세요.
+      </p>
+
+      <table class="nvidia-table" style="font-size: 13px; margin-bottom: 20px;">
+        <thead>
+          <tr>
+            <th style="width: 25%;">항목 비교</th>
+            <th style="width: 37.5%; background: #eff6ff;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="radio" name="primarySelect" value="${m1.id}" ${m1.id === defaultPrimaryId ? 'checked' : ''} onchange="App.updateMergePreviewSelection('${m1.id}', '${m2.id}')" />
+                <strong style="color: #1d4ed8;">계정 A (선택)</strong>
+              </label>
+            </th>
+            <th style="width: 37.5%; background: #fef2f2;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="radio" name="primarySelect" value="${m2.id}" ${m2.id === defaultPrimaryId ? 'checked' : ''} onchange="App.updateMergePreviewSelection('${m2.id}', '${m1.id}')" />
+                <strong style="color: #b91c1c;">계정 B (선택)</strong>
+              </label>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>성명 (기수)</strong></td>
+            <td><strong>${m1.name}</strong> (${m1.cohort}기)</td>
+            <td><strong>${m2.name}</strong> (${m2.cohort}기)</td>
+          </tr>
+          <tr>
+            <td><strong>가입 방식 및 ID</strong></td>
+            <td>${m1.googleUid ? '🔴 Google 소셜' : '👤 일반 ID'}<br><span style="font-size: 11.5px; color: var(--color-mute);">${m1.id}</span></td>
+            <td>${m2.googleUid ? '🔴 Google 소셜' : '👤 일반 ID'}<br><span style="font-size: 11.5px; color: var(--color-mute);">${m2.id}</span></td>
+          </tr>
+          <tr>
+            <td><strong>연락처 (Phone)</strong></td>
+            <td>${m1.phone || '<span style="color:#94a3b8;">(미입력)</span>'}</td>
+            <td>${m2.phone || '<span style="color:#94a3b8;">(미입력)</span>'}</td>
+          </tr>
+          <tr>
+            <td><strong>이메일 (Email)</strong></td>
+            <td>${m1.Pemail || m1.googleEmail || '<span style="color:#94a3b8;">(미입력)</span>'}</td>
+            <td>${m2.Pemail || m2.googleEmail || '<span style="color:#94a3b8;">(미입력)</span>'}</td>
+          </tr>
+          <tr>
+            <td><strong>회사명 / 직함</strong></td>
+            <td>${m1.company || '-'}</td>
+            <td>${m2.company || '-'}</td>
+          </tr>
+          <tr>
+            <td><strong>회비 납부 상태</strong></td>
+            <td>${m1.feePaid ? '✅ 납부완료 (' + (m1.feeDate || '') + ')' : '❌ 미납'}</td>
+            <td>${m2.feePaid ? '✅ 납부완료 (' + (m2.feeDate || '') + ')' : '❌ 미납'}</td>
+          </tr>
+          <tr>
+            <td><strong>회원 권한</strong></td>
+            <td>${this.getRoleName(m1.role)}</td>
+            <td>${this.getRoleName(m2.role)}</td>
+          </tr>
+          <tr>
+            <td><strong>최초 가입일</strong></td>
+            <td>${m1.joinDate || '-'}</td>
+            <td>${m2.joinDate || '-'}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 💡 계정 통합 실행 시 미리보기 영향 범위 박스 -->
+      <div style="background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+        <h5 style="margin: 0 0 8px 0; font-size: 14px; color: #15803d; font-weight: 700;">
+          💡 계정 통합 최종 실행 시 일어나는 일 (미리보기 확인)
+        </h5>
+        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #166534; line-height: 1.6;">
+          <li>선택하신 <strong id="selectedPrimaryLabel" style="color: #1d4ed8;">주 계정</strong>의 프로필 데이터가 최종 유지됩니다.</li>
+          <li>Google 소셜 연동 정보('googleUid'), 이메일, 회비 납부 내역('feePaid')은 부 계정의 유효 데이터가 주 계정으로 <strong>자동 합성(Merge)</strong>됩니다.</li>
+          <li>선택되지 않은 부 계정은 데이터베이스(Firestore) 및 회원 목록에서 <strong>안전하게 삭제 및 일원화</strong>됩니다.</li>
+        </ul>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--color-hairline); padding-top: 16px;">
+        <button type="button" class="btn btn-outline" onclick="App.closeMergeAccountModal()">취소</button>
+        <button type="button" class="btn btn-primary" style="background: #4f46e5; border-color: #4f46e5;" onclick="App.executeMergeAccounts('${defaultPrimaryId}', '${defaultSecondaryId}')">
+          ⚡ 선택한 내용으로 계정 통합 최종 실행
+        </button>
+      </div>
+    `;
+  },
+
+  updateMergePreviewSelection(primaryId, secondaryId) {
+    const selectedLabel = document.getElementById("selectedPrimaryLabel");
+    const mPrimary = this.members.find(m => m.id === primaryId);
+    if (selectedLabel && mPrimary) {
+      selectedLabel.textContent = `주 계정 (${mPrimary.name} - ${mPrimary.id})`;
+    }
+    const btn = document.querySelector("#mergeAccountModalBody button.btn-primary");
+    if (btn) {
+      btn.onclick = () => this.executeMergeAccounts(primaryId, secondaryId);
+    }
+  },
+
+  async executeMergeAccounts(primaryId, secondaryId) {
+    const primaryIndex = this.members.findIndex(m => m.id === primaryId);
+    const secondaryIndex = this.members.findIndex(m => m.id === secondaryId);
+
+    if (primaryIndex === -1 || secondaryIndex === -1) {
+      this.showToast("⚠️ 통합 대상 계정을 찾을 수 없습니다.");
+      return;
+    }
+
+    const primary = this.members[primaryIndex];
+    const secondary = this.members[secondaryIndex];
+
+    // 💡 두 계정 데이터 스마트 병합 (Merge)
+    const mergedUser = {
+      ...primary,
+      googleUid: primary.googleUid || secondary.googleUid || "",
+      googleEmail: primary.googleEmail || secondary.googleEmail || "",
+      Pemail: primary.Pemail || secondary.Pemail || primary.googleEmail || secondary.googleEmail || "",
+      phone: primary.phone || secondary.phone || "",
+      kakaoId: primary.kakaoId || secondary.kakaoId || "",
+      company: primary.company || secondary.company || "",
+      industry: primary.industry || secondary.industry || "",
+      industryIcon: primary.industryIcon || secondary.industryIcon || "",
+      location: primary.location || secondary.location || "",
+      pageURL: primary.pageURL || secondary.pageURL || "",
+      summary: primary.summary || secondary.summary || "",
+      feePaid: primary.feePaid || secondary.feePaid || false,
+      feeDate: primary.feePaid ? primary.feeDate : (secondary.feePaid ? secondary.feeDate : primary.feeDate || "")
+    };
+
+    // 1) Firestore DB 처리 (부 계정 삭제 및 주 계정 병합 업데이트)
+    if (window.db && window.FS && window.FS.deleteDoc && window.FS.setDoc) {
+      try {
+        await window.FS.deleteDoc(window.FS.doc(window.db, "members", secondary.id));
+        await window.FS.setDoc(window.FS.doc(window.db, "members", primary.id), mergedUser, { merge: true });
+        console.log(`Firestore 계정 통합 완료: ${secondary.id} 삭제 후 ${primary.id}로 합침`);
+      } catch (err) {
+        console.warn("Firestore 계정 통합 처리 중 경고:", err);
+      }
+    }
+
+    // 2) 로컬 배열 업데이트 (부 계정 제거 & 주 계정 갱신)
+    this.members[primaryIndex] = mergedUser;
+    this.members = this.members.filter(m => m.id !== secondary.id);
+    StorageService.saveMembers(this.members);
+
+    this.closeMergeAccountModal();
+    this.showToast(`🎉 ${mergedUser.name} 원우님의 중복 계정이 성공적으로 하나로 통합되었습니다!`);
+    this.renderAdmin();
+    this.renderMemberDirectory();
+  },
+
+  closeMergeAccountModal() {
+    const modal = document.getElementById("mergeAccountModal");
+    if (modal) modal.style.display = "none";
+  },
+
   async changeMemberRole(memberId, newRole) {
     if (this.currentRole !== "admin") {
       this.showToast("🔒 회원 등급 변경 권한은 최고 관리자(admin) 전용입니다.");

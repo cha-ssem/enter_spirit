@@ -426,8 +426,13 @@
         <h2 style="font-size: 36px; margin-top: 8px;">회원 등급 & 네트워킹 회계 장부</h2>
       </div>
 
-      <!-- Member Table -->
-      <h3 style="font-size: 20px; margin-bottom: 16px;">📋 회원가입 & 회비 납부 상태 관리</h3>
+      <!-- Member Table Header & Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="font-size: 20px; margin: 0;">📋 회원가입 & 회비 납부 상태 관리</h3>
+        <button class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-color: #6366f1; color: #4f46e5; background: #f5f3ff;" onclick="App.openMergeAccountModal()">
+          🔗 중복 계정 감지 및 통합
+        </button>
+      </div>
       <div class="nvidia-table-wrapper">
         <table class="nvidia-table">
           <thead>
@@ -888,6 +893,22 @@
             <button type="submit" class="btn btn-primary btn-sm" style="padding: 8px 24px; font-size: 14px; font-weight: 700;">📝 회원가입 신청 완료</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 💡 중복 회원 계정 통합 (Merge Account) 미리보기 및 확인 모달 -->
+  <div id="mergeAccountModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 720px; width: 94%; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 14px; margin-bottom: 18px;">
+        <h3 style="font-size: 20px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--color-ink);">
+          🔗 중복 회원 계정 통합 (Merge Accounts)
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeMergeAccountModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+      </div>
+
+      <div id="mergeAccountModalBody">
+        <!-- JavaScript 동적 미리보기 및 비교 테이블 렌더링 -->
       </div>
     </div>
   </div>
