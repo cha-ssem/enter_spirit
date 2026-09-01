@@ -19,7 +19,7 @@ const INITIAL_MEMBERS = [
     avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
     joinDate: "2026-03-02",
     feePaid: true,
-    feeDate: "2026-03-05"
+    feeDate: "2026-09-02"
   },
   {
     id: "mem-1302",
@@ -37,7 +37,7 @@ const INITIAL_MEMBERS = [
     avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80",
     joinDate: "2026-03-01",
     feePaid: true,
-    feeDate: "2026-03-02"
+    feeDate: "2026-09-02"
   },
   {
     id: "mem-1303",
@@ -55,7 +55,7 @@ const INITIAL_MEMBERS = [
     avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
     joinDate: "2026-03-04",
     feePaid: true,
-    feeDate: "2026-03-08"
+    feeDate: "2026-09-02"
   },
   {
     id: "mem-1304",
@@ -73,7 +73,7 @@ const INITIAL_MEMBERS = [
     avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80",
     joinDate: "2026-03-05",
     feePaid: true,
-    feeDate: "2026-03-06"
+    feeDate: "2026-09-02"
   },
   {
     id: "mem-1305",
@@ -91,7 +91,7 @@ const INITIAL_MEMBERS = [
     avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
     joinDate: "2026-03-02",
     feePaid: true,
-    feeDate: "2026-03-04"
+    feeDate: "2026-09-02"
   },
   {
     id: "mem-1306",
@@ -109,7 +109,7 @@ const INITIAL_MEMBERS = [
     avatarUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
     joinDate: "2026-03-06",
     feePaid: true,
-    feeDate: "2026-03-09"
+    feeDate: "2026-09-02"
   },
   {
     id: "mem-1307",
@@ -229,9 +229,15 @@ class StorageService {
 
     // cohort가 문자열 형태일 경우 숫자로 자동 정규화 변환
     let updated = originalLength !== parsed.length;
+    const todayStr = new Date().toLocaleDateString("sv-SE");
     parsed.forEach(m => {
       if (typeof m.cohort === "string") {
         m.cohort = parseInt(m.cohort.replace(/[^0-9]/g, ""), 10) || 13;
+        updated = true;
+      }
+      // 💡 초기 13기 납부 회원의 과거 샘플 납부일자(2026-03-XX)를 오늘 날짜로 최신 동기화
+      if (m.feePaid && m.feeDate && m.feeDate.startsWith("2026-03-")) {
+        m.feeDate = todayStr;
         updated = true;
       }
     });

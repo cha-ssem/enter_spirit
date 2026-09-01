@@ -1292,15 +1292,18 @@ const App = {
     if (!tableBody) return;
 
     const isAdmin = this.currentRole === "admin";
+    const todayStr = new Date().toLocaleDateString("sv-SE");
 
     tableBody.innerHTML = this.members.map(m => {
-      const todayStr = new Date().toISOString().split("T")[0];
       const defaultFeeDate = (m.feeDate && m.feeDate !== "-") ? m.feeDate : todayStr;
 
       return `
         <tr>
-          <td><strong>${m.name}</strong> (${m.cohort}기)</td>
-          <td>${m.company}</td>
+          <td style="text-align: center;">
+            <input type="checkbox" class="member-select-check" value="${m.id}" data-feepaid="${m.feePaid ? '1' : '0'}" onchange="App.handleMemberSelectChange()" style="cursor: pointer; width: 16px; height: 16px;" />
+          </td>
+          <td><strong>${this.escapeHtml(m.name)}</strong> (${m.cohort}기)</td>
+          <td>${this.escapeHtml(m.company || '-')}</td>
           <td>
             <select class="form-input" style="padding: 4px 8px; font-size: 13px; min-height: 32px; width: auto;" ${isAdmin ? '' : 'disabled'} onchange="App.changeMemberRole('${m.id}', this.value)">
               <option value="regular" ${m.role === 'regular' ? 'selected' : ''}>일반회원</option>
@@ -1310,7 +1313,7 @@ const App = {
             </select>
             ${!isAdmin ? '<span style="font-size: 11px; color: var(--color-mute); margin-left: 4px;">🔒 관리자 전용</span>' : ''}
           </td>
-          <td>${m.joinDate}</td>
+          <td>${this.escapeHtml(m.joinDate || '-')}</td>
           <td>
             <span class="pill-tag-nvidia" style="background: ${m.feePaid ? '#dcfce7' : '#fee2e2'}; color: ${m.feePaid ? '#15803d' : '#b91c1c'}; font-size: 11px;">
               ${m.feePaid ? '납부완료' : '미납'}
@@ -1318,9 +1321,19 @@ const App = {
           </td>
           <td>
             ${m.feePaid ? `
-              <span style="font-size: 13px; font-weight: 700; color: #16a34a;">📅 ${m.feeDate || '-'}</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                ${isAdmin ? `
+                  <input type="date" class="form-input" style="padding: 3px 6px; font-size: 12px; width: 130px;" value="${defaultFeeDate}" onchange="App.updateMemberFeeDate('${m.id}', this.value)" title="회비 납부일자 변경" />
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px; white-space: nowrap;" onclick="App.updateMemberFeeDate('${m.id}', '${todayStr}')" title="오늘 날짜로 설정">오늘</button>
+                ` : `
+                  <span style="font-size: 13px; font-weight: 700; color: #16a34a;">📅 ${m.feeDate || '-'}</span>
+                `}
+              </div>
             ` : `
-              <input type="date" id="feeDateInput_${m.id}" class="form-input" style="padding: 3px 6px; font-size: 12px; width: 135px;" value="${defaultFeeDate}" title="납부 처리 시 입력할 회비 납부일자" />
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <input type="date" id="feeDateInput_${m.id}" class="form-input" style="padding: 3px 6px; font-size: 12px; width: 130px;" value="${todayStr}" title="납부 처리 시 입력할 회비 납부일자" />
+                <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px; white-space: nowrap;" onclick="document.getElementById('feeDateInput_${m.id}').value='${todayStr}'" title="오늘 날짜로 설정">오늘</button>
+              </div>
             `}
           </td>
           <td>
@@ -1332,10 +1345,257 @@ const App = {
       `;
     }).join("");
 
+    this.handleMemberSelectChange();
     this.renderLedger();
     if (typeof this.fetchCloudLedger === "function") {
       this.fetchCloudLedger();
     }
+  },
+
+  toggleSelectAllMembers(isChecked) {
+    document.querySelectorAll(".member-select-check").forEach(cb => {
+      cb.checked = isChecked;
+    });
+    this.handleMemberSelectChange();
+  },
+
+  handleMemberSelectChange() {
+    const allChecks = document.querySelectorAll(".member-select-check");
+    const checkedBoxes = document.querySelectorAll(".member-select-check:checked");
+    const count = checkedBoxes.length;
+
+    const countEl = document.getElementById("bulkSelectedCount");
+    if (countEl) countEl.textContent = count;
+
+    const bulkBtn = document.getElementById("bulkFeePayBtn");
+    if (bulkBtn) {
+      if (count > 0) {
+        bulkBtn.style.display = "inline-flex";
+      } else {
+        bulkBtn.style.display = "none";
+      }
+    }
+
+    const selectAllEl = document.getElementById("selectAllMembersCheck");
+    if (selectAllEl && allChecks.length > 0) {
+      if (count === 0) {
+        selectAllEl.checked = false;
+        selectAllEl.indeterminate = false;
+      } else if (count === allChecks.length) {
+        selectAllEl.checked = true;
+        selectAllEl.indeterminate = false;
+      } else {
+        selectAllEl.checked = false;
+        selectAllEl.indeterminate = true;
+      }
+    }
+  },
+
+  openBulkFeePayModal() {
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 회원 관리 권한이 필요합니다.");
+      return;
+    }
+
+    const checkedBoxes = Array.from(document.querySelectorAll(".member-select-check:checked"));
+    const selectedIds = checkedBoxes.map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+      this.showToast("⚠️ 일괄 납부 처리할 회원을 1명 이상 선택해 주세요.");
+      return;
+    }
+
+    // 선택된 회원 중 미납 상태인 회원만 필터링
+    const targetMembers = this.members.filter(m => selectedIds.includes(m.id) && !m.feePaid);
+
+    if (targetMembers.length === 0) {
+      this.showToast("ℹ️ 선택하신 회원은 모두 이미 회비가 [납부완료]된 상태입니다.");
+      return;
+    }
+
+    const modal = document.getElementById("bulkFeePayModal");
+    if (!modal) return;
+
+    const countEl = document.getElementById("bulkModalCount");
+    if (countEl) countEl.textContent = targetMembers.length;
+
+    const listEl = document.getElementById("bulkModalMemberList");
+    if (listEl) {
+      listEl.innerHTML = targetMembers.map(m => `
+        <span class="pill-tag-nvidia" style="background: #e0e7ff; color: #3730a3; font-size: 12px; padding: 3px 8px; border-radius: 4px;">
+          👤 ${this.escapeHtml(m.name)} (${m.cohort}기)
+        </span>
+      `).join("");
+    }
+
+    const todayStr = new Date().toLocaleDateString("sv-SE");
+    const dateInput = document.getElementById("bulkFeePayDate");
+    if (dateInput) dateInput.value = todayStr;
+
+    const amountInput = document.getElementById("bulkFeePayAmount");
+    if (amountInput) amountInput.value = "100000";
+
+    this.selectedBulkMemberIds = targetMembers.map(m => m.id);
+    this.updateBulkTotalEstimate();
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  },
+
+  closeBulkFeePayModal() {
+    const modal = document.getElementById("bulkFeePayModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+  },
+
+  updateBulkTotalEstimate() {
+    const amount = parseInt(document.getElementById("bulkFeePayAmount").value, 10) || 0;
+    const count = (this.selectedBulkMemberIds && this.selectedBulkMemberIds.length) ? this.selectedBulkMemberIds.length : 0;
+    const total = amount * count;
+    const totalEl = document.getElementById("bulkModalTotalAmount");
+    if (totalEl) totalEl.textContent = `${total.toLocaleString()}원`;
+  },
+
+  async confirmBulkFeePayment(e) {
+    if (e) e.preventDefault();
+
+    if (!this.selectedBulkMemberIds || this.selectedBulkMemberIds.length === 0) {
+      this.showToast("⚠️ 납부 대상 회원이 지정되지 않았습니다.");
+      return;
+    }
+
+    const amount = parseInt(document.getElementById("bulkFeePayAmount").value, 10) || 100000;
+    const feeDate = document.getElementById("bulkFeePayDate").value || new Date().toLocaleDateString("sv-SE");
+
+    const targetMembers = this.members.filter(m => this.selectedBulkMemberIds.includes(m.id));
+    if (targetMembers.length === 0) return;
+
+    const memberUpdatePromises = [];
+    const ledgerPromises = [];
+    const now = Date.now();
+
+    targetMembers.forEach((m, idx) => {
+      m.feePaid = true;
+      m.feeDate = feeDate;
+      if (m.role === "regular") {
+        m.role = "full";
+      }
+
+      // Firestore members 업데이트
+      if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+        memberUpdatePromises.push(
+          window.FS.setDoc(window.FS.doc(window.db, "members", m.id), {
+            feePaid: true,
+            feeDate: feeDate,
+            role: m.role
+          }, { merge: true }).catch(console.warn)
+        );
+      }
+
+      // 💡 장부(ledger) 회비 수입 항목 자동 등록
+      const feeLedgerEntry = {
+        id: `led-fee-${now}-${idx}`,
+        date: feeDate,
+        type: "fee",
+        category: "정회원 회비",
+        name: m.name,
+        item: `${m.name} 원우 정회원 회비 납부`,
+        amount: amount,
+        location: "-",
+        attendees: "-",
+        note: `회원관리 일괄 납부 처리 연동 (${m.cohort}기)`,
+        receiptUrl: ""
+      };
+
+      this.ledger.unshift(feeLedgerEntry);
+
+      // Firestore ledger 업데이트
+      if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+        ledgerPromises.push(
+          window.FS.setDoc(window.FS.doc(window.db, "ledger", feeLedgerEntry.id), feeLedgerEntry).catch(console.warn)
+        );
+      }
+    });
+
+    StorageService.saveMembers(this.members);
+    StorageService.saveLedger(this.ledger);
+
+    // 비동기 클라우드 동기화 병렬 처리
+    Promise.all([...memberUpdatePromises, ...ledgerPromises]).catch(console.warn);
+
+    this.closeBulkFeePayModal();
+    this.showToast(`🎉 선택하신 원우 ${targetMembers.length}명의 회비 납부 및 장부 수입(${(amount * targetMembers.length).toLocaleString()}원)이 일괄 등록되었습니다!`);
+    this.renderAdmin();
+    this.renderLedger();
+  },
+
+  async updateMemberFeeDate(memberId, newDate) {
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 회비 납부일자 수정 권한이 없습니다.");
+      return;
+    }
+
+    if (!newDate) {
+      newDate = new Date().toLocaleDateString("sv-SE");
+    }
+
+    const member = this.members.find(m => m.id === memberId);
+    if (!member) return;
+
+    member.feeDate = newDate;
+    StorageService.saveMembers(this.members);
+
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "members", memberId), {
+          feeDate: newDate
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Firestore 회비 납부일자 갱신 오류:", err);
+      }
+    }
+
+    this.showToast(`📅 ${member.name} 원우의 회비 납부일자가 '${newDate}'(으)로 설정되었습니다.`);
+    this.renderAdmin();
+  },
+
+  async setAllFeeDatesToToday() {
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 관리자 또는 임원 권한이 필요합니다.");
+      return;
+    }
+
+    const todayStr = new Date().toLocaleDateString("sv-SE");
+    if (!confirm(`회비를 납부한 모든 원우의 납부일자를 오늘 날짜(${todayStr})로 일괄 변경하시겠습니까?`)) {
+      return;
+    }
+
+    let count = 0;
+    const updatePromises = [];
+
+    this.members.forEach(m => {
+      if (m.feePaid) {
+        m.feeDate = todayStr;
+        count++;
+        if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+          updatePromises.push(
+            window.FS.setDoc(window.FS.doc(window.db, "members", m.id), {
+              feeDate: todayStr
+            }, { merge: true }).catch(console.warn)
+          );
+        }
+      }
+    });
+
+    StorageService.saveMembers(this.members);
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+    }
+
+    this.showToast(`🎉 납부 완료 원우 ${count}명의 회비 납부일자가 오늘 날짜(${todayStr})로 일괄 설정되었습니다!`);
+    this.renderAdmin();
   },
 
   // 💡 헬퍼: 전화번호 하이픈 제거 및 숫자만 추출 (010-1234-5678 -> 01012345678)
@@ -1712,10 +1972,14 @@ const App = {
     const modal = document.getElementById("feePayModal");
     if (!modal) return;
 
+    const todayStr = new Date().toLocaleDateString("sv-SE");
+    const inputEl = document.getElementById(`feeDateInput_${member.id}`);
+    const selectedFeeDate = (inputEl && inputEl.value) ? inputEl.value : todayStr;
+
     document.getElementById("feePayMemberId").value = member.id;
     document.getElementById("feePayMemberName").value = `${member.name} (${member.cohort}기 - ${member.company || '13기 원우'})`;
     document.getElementById("feePayAmount").value = "100000"; // 💡 기본 정회원 회비 100,000원
-    document.getElementById("feePayDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("feePayDate").value = selectedFeeDate;
 
     modal.classList.add("active");
     modal.style.display = "flex";
