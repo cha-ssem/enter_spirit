@@ -1918,10 +1918,14 @@ const App = {
     this.initialBalance = val;
     StorageService.saveInitialBalance(val);
 
-    // Firestore settings/ledger_config 저장
+    // Firestore ledger/initial_balance 문서 저장 (기존 ledger 컬렉션 내부 통합 보관)
     if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
       try {
-        await window.FS.setDoc(window.FS.doc(window.db, "settings", "ledger_config"), { initialBalance: val }, { merge: true });
+        await window.FS.setDoc(window.FS.doc(window.db, "ledger", "initial_balance"), { 
+          initialBalance: val, 
+          isConfig: true, 
+          updatedAt: new Date().toISOString() 
+        }, { merge: true });
       } catch (err) {
         console.warn("Firestore 이월 잔고 저장 경고:", err);
       }
@@ -1929,6 +1933,34 @@ const App = {
 
     this.closeInitialBalanceModal();
     this.showToast(`🎉 이월 잔고 ${val.toLocaleString()}원이 설정되었습니다!`);
+    this.renderLedger();
+  },
+
+  async resetInitialBalanceToZero(e) {
+    if (e) e.preventDefault();
+
+    if (!confirm("초기 이월 잔고를 0원으로 리셋하시겠습니까?")) return;
+
+    this.initialBalance = 0;
+    StorageService.saveInitialBalance(0);
+
+    const input = document.getElementById("initialBalanceInput");
+    if (input) input.value = 0;
+
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "ledger", "initial_balance"), { 
+          initialBalance: 0, 
+          isConfig: true, 
+          updatedAt: new Date().toISOString() 
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Firestore 이월 잔고 초기화 경고:", err);
+      }
+    }
+
+    this.closeInitialBalanceModal();
+    this.showToast("🔄 이월 잔고가 0원으로 완벽히 초기화되었습니다!");
     this.renderLedger();
   },
 
