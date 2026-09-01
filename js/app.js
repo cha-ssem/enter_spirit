@@ -1887,15 +1887,20 @@ const App = {
   },
 
   /* 이월 잔고 모달 관련 */
-  openInitialBalanceModal() {
+  openInitialBalanceModal(e) {
+    if (e) e.preventDefault();
     const modal = document.getElementById("initialBalanceModal");
-    if (!modal) return;
+    if (!modal) {
+      console.warn("initialBalanceModal 엘리먼트를 찾을 수 없습니다.");
+      return;
+    }
 
     const input = document.getElementById("initialBalanceInput");
     if (input) input.value = this.initialBalance || 0;
 
     modal.classList.add("active");
     modal.style.display = "flex";
+    modal.style.zIndex = "9999";
   },
 
   closeInitialBalanceModal() {
