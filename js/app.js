@@ -41,9 +41,9 @@ const App = {
 
     // 💡 Firebase Firestore 클라우드 DB의 최신 회원 데이터, 강의 커리큘럼, 장부 데이터 비동기 동기화
     setTimeout(() => {
-      this.fetchCloudMembers();
-      this.fetchCloudLectures();
-      this.fetchCloudLedger();
+      if (typeof this.fetchCloudMembers === "function") this.fetchCloudMembers();
+      if (typeof this.fetchCloudLectures === "function") this.fetchCloudLectures();
+      if (typeof this.fetchCloudLedger === "function") this.fetchCloudLedger();
     }, 300);
   },
 
@@ -806,14 +806,19 @@ const App = {
 
     if (window.auth && window.googleProvider && window.signInWithPopup) {
       try {
-        const result = await window.signInWithPopup(window.auth, window.googleProvider);
+        const resolver = window.browserPopupRedirectResolver || undefined;
+        const result = await window.signInWithPopup(window.auth, window.googleProvider, resolver);
         googleUser = result.user;
       } catch (err) {
-        console.warn("Firebase Google Auth 인증 팝업 예외/안내:", err.message);
+        console.error("Firebase Google Auth 상세 오류 객체:", err);
         if (err.code === "auth/popup-closed-by-user") {
           this.showToast("⚠️ Google 로그인 팝업 창이 닫혔습니다.");
+        } else if (err.code === "auth/unauthorized-domain") {
+          this.showToast("⚠️ 현재 도메인이 Firebase 승인 도메인에 등록되지 않았습니다.");
+        } else if (err.code === "auth/operation-not-supported-in-this-environment") {
+          this.showToast("⚠️ 로컬 파일(file://)에서는 지원되지 않습니다. 웹 서버(http://localhost)로 실행해 주세요.");
         } else {
-          this.showToast("⚠️ Google 인증 오류: " + (err.message || "인증을 완료하지 못했습니다."));
+          this.showToast("⚠️ Google 인증 오류: " + (err.code ? `[${err.code}] ` : "") + (err.message || "인증을 완료하지 못했습니다."));
         }
         return;
       }

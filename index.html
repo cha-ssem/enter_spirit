@@ -1070,7 +1070,7 @@
       getFirestore, collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc 
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
     import { 
-      getAuth, GoogleAuthProvider, signInWithPopup 
+      getAuth, GoogleAuthProvider, signInWithPopup, browserPopupRedirectResolver 
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
     // Your web app's Firebase configuration (GitHub Secret Scanning 경고 방지 문자열 조합)
@@ -1090,6 +1090,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: "select_account" });
 
     // Global References for app.js
     window.db = db;
@@ -1097,6 +1098,7 @@
     window.auth = auth;
     window.googleProvider = googleProvider;
     window.signInWithPopup = signInWithPopup;
+    window.browserPopupRedirectResolver = browserPopupRedirectResolver;
   </script>
 
 
