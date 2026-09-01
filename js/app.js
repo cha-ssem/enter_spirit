@@ -1284,6 +1284,7 @@ const App = {
     const container = document.getElementById("mergeAccountModalBody");
     if (!modal || !container) return;
 
+    modal.classList.add("active");
     modal.style.display = "flex";
 
     let m1 = null;
@@ -1492,7 +1493,10 @@ const App = {
 
   closeMergeAccountModal() {
     const modal = document.getElementById("mergeAccountModal");
-    if (modal) modal.style.display = "none";
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
   },
 
   async changeMemberRole(memberId, newRole) {
