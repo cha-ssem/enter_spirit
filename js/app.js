@@ -834,16 +834,42 @@ const App = {
 
     const googleUid = googleUser.uid;
     const googleEmail = googleUser.email || "";
+    const googlePhone = this.normalizePhone(googleUser.phoneNumber || "");
 
-    // 💡 1. 구글 고유 UID 및 이메일 기반으로 기존 가입 회원 100% 정밀 탐색
-    const existingMember = this.members.find(m => 
+    // 💡 1. 구글 고유 UID, 연동된 UID 목록, 이메일, 전화번호 기반으로 기존 가입 회원 100% 정밀 탐색
+    let existingMember = this.members.find(m => 
       (m.googleUid && m.googleUid === googleUid) ||
-      (googleEmail && m.googleEmail && m.googleEmail === googleEmail) ||
+      (Array.isArray(m.linkedGoogleUids) && m.linkedGoogleUids.includes(googleUid)) ||
+      (googleEmail && m.googleEmail && this.normalizeEmail(m.googleEmail) === this.normalizeEmail(googleEmail)) ||
+      (googleEmail && Array.isArray(m.linkedGoogleEmails) && m.linkedGoogleEmails.some(e => this.normalizeEmail(e) === this.normalizeEmail(googleEmail))) ||
+      (googleEmail && m.Pemail && this.normalizeEmail(m.Pemail) === this.normalizeEmail(googleEmail)) ||
+      (googlePhone && m.phone && this.normalizePhone(m.phone) === googlePhone) ||
       m.id === `mem-g-${googleUid.slice(0, 6)}`
     );
 
     if (existingMember) {
-      // 💡 이미 가입된 구글 회원이 존재하면: 프로필 이름을 변경했더라도 100% 동일 계정으로 즉시 로그인!
+      // 💡 만약 부 계정의 googleUid 또는 googleEmail이 아직 주 계정에 등록되지 않았다면 자동 연동(Auto-link)
+      let needsSave = false;
+      if (!existingMember.linkedGoogleUids) existingMember.linkedGoogleUids = [];
+      if (existingMember.googleUid !== googleUid && !existingMember.linkedGoogleUids.includes(googleUid)) {
+        existingMember.linkedGoogleUids.push(googleUid);
+        needsSave = true;
+      }
+      if (googleEmail) {
+        if (!existingMember.linkedGoogleEmails) existingMember.linkedGoogleEmails = [];
+        if (existingMember.googleEmail !== googleEmail && !existingMember.linkedGoogleEmails.includes(googleEmail)) {
+          existingMember.linkedGoogleEmails.push(googleEmail);
+          needsSave = true;
+        }
+      }
+      if (needsSave) {
+        StorageService.saveMembers(this.members);
+        if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+          window.FS.setDoc(window.FS.doc(window.db, "members", existingMember.id), existingMember, { merge: true }).catch(console.warn);
+        }
+      }
+
+      // 💡 이미 가입/통합된 구글 회원이 존재하면: 100% 동일 계정으로 즉시 로그인!
       this.currentUserId = existingMember.id;
       StorageService.setCurrentUserId(existingMember.id);
       this.setRole(existingMember.role || "regular");
@@ -1467,11 +1493,28 @@ const App = {
     const primary = this.members[primaryIndex];
     const secondary = this.members[secondaryIndex];
 
+    // 💡 두 계정에 연동된 모든 Google UID 및 이메일 수집 및 보존
+    const allGoogleUids = Array.from(new Set([
+      primary.googleUid, 
+      secondary.googleUid, 
+      ...(primary.linkedGoogleUids || []), 
+      ...(secondary.linkedGoogleUids || [])
+    ].filter(Boolean)));
+
+    const allGoogleEmails = Array.from(new Set([
+      primary.googleEmail, 
+      secondary.googleEmail, 
+      ...(primary.linkedGoogleEmails || []), 
+      ...(secondary.linkedGoogleEmails || [])
+    ].filter(Boolean)));
+
     // 💡 두 계정 데이터 스마트 병합 (Merge)
     const mergedUser = {
       ...primary,
       googleUid: primary.googleUid || secondary.googleUid || "",
       googleEmail: primary.googleEmail || secondary.googleEmail || "",
+      linkedGoogleUids: allGoogleUids,
+      linkedGoogleEmails: allGoogleEmails,
       Pemail: primary.Pemail || secondary.Pemail || primary.googleEmail || secondary.googleEmail || "",
       phone: primary.phone || secondary.phone || "",
       kakaoId: primary.kakaoId || secondary.kakaoId || "",
