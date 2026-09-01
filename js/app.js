@@ -796,18 +796,31 @@ const App = {
         googleUser = result.user;
       } catch (err) {
         console.warn("Firebase Google Auth 인증 팝업 예외/안내:", err.message);
+        if (err.code === "auth/popup-closed-by-user") {
+          this.showToast("⚠️ Google 로그인 팝업 창이 닫혔습니다.");
+        } else {
+          this.showToast("⚠️ Google 인증 오류: " + (err.message || "인증을 완료하지 못했습니다."));
+        }
+        return;
       }
+    } else {
+      this.showToast("⚠️ Firebase Auth 서비스에 연결할 수 없습니다.");
+      return;
     }
 
-    const googleUid = googleUser ? googleUser.uid : "demo-google-uid";
-    const googleEmail = googleUser ? googleUser.email : "";
+    if (!googleUser || !googleUser.uid) {
+      this.showToast("⚠️ Google 계정 정보를 가져오지 못했습니다.");
+      return;
+    }
+
+    const googleUid = googleUser.uid;
+    const googleEmail = googleUser.email || "";
 
     // 💡 1. 구글 고유 UID 및 이메일 기반으로 기존 가입 회원 100% 정밀 탐색
     const existingMember = this.members.find(m => 
       (m.googleUid && m.googleUid === googleUid) ||
-      (googleEmail && m.googleEmail === googleEmail) ||
-      m.id === `mem-g-${googleUid.slice(0, 6)}` ||
-      (googleUser && googleUser.displayName && m.name === googleUser.displayName)
+      (googleEmail && m.googleEmail && m.googleEmail === googleEmail) ||
+      m.id === `mem-g-${googleUid.slice(0, 6)}`
     );
 
     if (existingMember) {
