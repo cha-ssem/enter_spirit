@@ -271,8 +271,17 @@ class StorageService {
       return INITIAL_LEDGER;
     }
     let parsed = JSON.parse(data);
-    // 이전 샘플 더미 내역(led-01~led-04) 자동 필터링 제거
-    const filtered = parsed.filter(item => item.id !== "led-01" && item.id !== "led-02" && item.id !== "led-03" && item.id !== "led-04");
+    // 이전 샘플 더미 내역(led-01~led-04) 및 initial_balance 설정 문서 자동 필터링 제거
+    const filtered = parsed.filter(item => {
+      if (!item) return false;
+      if (item.id === "initial_balance" || item.isConfig === true) {
+        if (typeof item.initialBalance === "number") {
+          localStorage.setItem("enterprise_13th_initial_balance", item.initialBalance.toString());
+        }
+        return false;
+      }
+      return item.id !== "led-01" && item.id !== "led-02" && item.id !== "led-03" && item.id !== "led-04";
+    });
     if (filtered.length !== parsed.length) {
       localStorage.setItem("enterprise_13th_ledger", JSON.stringify(filtered));
     }

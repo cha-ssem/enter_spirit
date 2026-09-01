@@ -1102,6 +1102,13 @@
     window.googleProvider = googleProvider;
     window.signInWithPopup = signInWithPopup;
     window.browserPopupRedirectResolver = browserPopupRedirectResolver;
+
+    // Firebase 초기화 완료 즉시 클라우드 데이터 동기화 트리거
+    if (window.App) {
+      if (typeof window.App.fetchCloudMembers === "function") window.App.fetchCloudMembers();
+      if (typeof window.App.fetchCloudLectures === "function") window.App.fetchCloudLectures();
+      if (typeof window.App.fetchCloudLedger === "function") window.App.fetchCloudLedger();
+    }
   </script>
 
 

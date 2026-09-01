@@ -245,14 +245,29 @@ const App = {
       const cloudLedger = [];
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        cloudLedger.push({ ...data, id: docSnap.id || data.id });
+        const docId = docSnap.id || data.id;
+
+        // 💡 initial_balance 이월 잔고 설정 문서는 장부 항목이 아닌 이월 잔고 설정값으로 분리 저장
+        if (docId === "initial_balance" || data.isConfig === true) {
+          if (typeof data.initialBalance === "number") {
+            this.initialBalance = data.initialBalance;
+            StorageService.saveInitialBalance(data.initialBalance);
+            const initialEl = document.getElementById("initialBalanceAmount");
+            if (initialEl) initialEl.textContent = `${this.initialBalance.toLocaleString()}원`;
+          }
+          return;
+        }
+
+        cloudLedger.push({ ...data, id: docId });
       });
 
-      if (cloudLedger.length > 0) {
-        cloudLedger.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-        this.ledger = cloudLedger;
-        StorageService.saveLedger(this.ledger);
-        if (this.currentTab === "ledger") this.renderLedger();
+      cloudLedger.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      this.ledger = cloudLedger;
+      StorageService.saveLedger(this.ledger);
+
+      // 💡 현재 탭이 관리자 탭('admin')이거나 'ledger'인 경우 화면 자동 갱신
+      if (this.currentTab === "admin" || this.currentTab === "ledger") {
+        this.renderLedger();
       }
     } catch (err) {
       console.warn("Firestore ledger 클라우드 DB 로딩 예외 (로컬 Fallback 유지):", err);
@@ -1318,6 +1333,9 @@ const App = {
     }).join("");
 
     this.renderLedger();
+    if (typeof this.fetchCloudLedger === "function") {
+      this.fetchCloudLedger();
+    }
   },
 
   // 💡 헬퍼: 전화번호 하이픈 제거 및 숫자만 추출 (010-1234-5678 -> 01012345678)
@@ -1790,32 +1808,51 @@ const App = {
     const ledgerTable = document.getElementById("ledgerTableBody");
     if (!ledgerTable) return;
 
+    if (!Array.isArray(this.ledger)) {
+      this.ledger = [];
+    }
+
     const filterType = document.getElementById("ledgerFilterType") ? document.getElementById("ledgerFilterType").value : "all";
     const searchQuery = document.getElementById("ledgerSearchInput") ? document.getElementById("ledgerSearchInput").value.trim().toLowerCase() : "";
 
     let totalIncome = 0;
     let totalExpense = 0;
 
-    this.ledger.forEach(item => {
+    // 💡 설정 문서나 빈 데이터 제외 후 유효한 장부 항목만 계산
+    const validLedger = this.ledger.filter(item => {
+      if (!item || item.id === "initial_balance" || item.isConfig === true) {
+        return false;
+      }
+      return true;
+    });
+
+    validLedger.forEach(item => {
+      const amt = Number(item.amount) || 0;
       const isIncome = item.type === "sponsorship" || item.type === "fee" || item.type === "interest";
       if (isIncome) {
-        totalIncome += item.amount;
+        totalIncome += amt;
       } else {
-        totalExpense += item.amount;
+        totalExpense += amt;
       }
     });
 
-    const initBalance = this.initialBalance || 0;
+    const initBalance = Number(this.initialBalance) || 0;
     const balance = initBalance + totalIncome - totalExpense;
 
     const initialEl = document.getElementById("initialBalanceAmount");
     if (initialEl) initialEl.textContent = `${initBalance.toLocaleString()}원`;
-    document.getElementById("totalSponsorshipAmount").textContent = `${totalIncome.toLocaleString()}원`;
-    document.getElementById("totalExpenseAmount").textContent = `${totalExpense.toLocaleString()}원`;
-    document.getElementById("ledgerBalanceAmount").textContent = `${balance.toLocaleString()}원`;
+    
+    const incomeEl = document.getElementById("totalSponsorshipAmount");
+    if (incomeEl) incomeEl.textContent = `${totalIncome.toLocaleString()}원`;
+
+    const expenseEl = document.getElementById("totalExpenseAmount");
+    if (expenseEl) expenseEl.textContent = `${totalExpense.toLocaleString()}원`;
+
+    const balanceEl = document.getElementById("ledgerBalanceAmount");
+    if (balanceEl) balanceEl.textContent = `${balance.toLocaleString()}원`;
 
     // 필터링 및 검색어 적용
-    const filteredLedger = this.ledger.filter(item => {
+    const filteredLedger = validLedger.filter(item => {
       if (filterType !== "all" && item.type !== filterType) return false;
       if (searchQuery) {
         const text = `${item.name || ''} ${item.item || ''} ${item.location || ''} ${item.note || ''} ${item.category || ''}`.toLowerCase();
@@ -1830,6 +1867,7 @@ const App = {
     }
 
     ledgerTable.innerHTML = filteredLedger.map(item => {
+      const amt = Number(item.amount) || 0;
       const isIncome = item.type === "sponsorship" || item.type === "fee" || item.type === "interest";
       let badgeLabel = "🟢 찬조금";
       let badgeBg = "#dcfce7";
@@ -1857,28 +1895,34 @@ const App = {
         badgeColor = "#b91c1c";
       }
 
+      // 날짜 포맷팅 안전 처리
+      let dateDisplay = item.date || "-";
+      if (typeof dateDisplay === "object" && dateDisplay && dateDisplay.seconds) {
+        dateDisplay = new Date(dateDisplay.seconds * 1000).toISOString().split("T")[0];
+      }
+
       return `
         <tr>
-          <td style="white-space: nowrap;">${this.escapeHtml(item.date)}</td>
+          <td style="white-space: nowrap;">${this.escapeHtml(dateDisplay)}</td>
           <td>
             <span class="pill-tag-nvidia" style="background: ${badgeBg}; color: ${badgeColor}; font-size: 11px; padding: 3px 8px; border-radius: 4px;">
               ${badgeLabel}
             </span>
           </td>
           <td>
-            <strong>${this.escapeHtml(item.name)}</strong>
+            <strong>${this.escapeHtml(item.name || '미지정')}</strong>
             ${item.location && item.location !== '-' ? `<br><span style="font-size: 11.5px; color: var(--color-mute);">📍 ${this.escapeHtml(item.location)}</span>` : ''}
           </td>
           <td>
-            ${this.escapeHtml(item.item)}
+            ${this.escapeHtml(item.item || '내역 미기재')}
             ${item.attendees && item.attendees !== '-' ? ` <span style="font-size: 11.5px; color: #4f46e5; font-weight: 700;">(👥 ${this.escapeHtml(item.attendees)})</span>` : ''}
           </td>
           <td style="font-weight: 700; color: ${isIncome ? '#16a34a' : '#dc2626'}; white-space: nowrap;">
-            ${isIncome ? '+' : '-'}${item.amount.toLocaleString()}원
+            ${isIncome ? '+' : '-'}${amt.toLocaleString()}원
           </td>
           <td>
             ${item.receiptUrl ? `
-              <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="App.openReceiptZoomModal('${this.escapeHtml(item.receiptUrl)}', '${this.escapeHtml(item.item)}')">
+              <button class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="App.openReceiptZoomModal('${this.escapeHtml(item.receiptUrl)}', '${this.escapeHtml(item.item || '')}')">
                 🧾 영수증
               </button>
             ` : '<span style="color: #cbd5e1; font-size: 12px;">-</span>'}
