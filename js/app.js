@@ -505,19 +505,21 @@ const App = {
                   </a>
                 ` : ''}
               </div>
-              <div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 2px;">${m.company}</div>
-              <div style="font-size: 12.5px; margin-top: 2px; color: var(--color-mute);">
-                ${m.industryIcon} ${m.industry}
-              </div>
+              ${m.company ? `<div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 2px;">${m.company}</div>` : ''}
+              ${m.industry ? `
+                <div style="font-size: 12.5px; margin-top: 2px; color: var(--color-mute);">
+                  ${m.industryIcon || ''} ${m.industry}
+                </div>
+              ` : ''}
             </div>
           </div>
-          <p style="font-size: 14.5px; color: var(--color-body); margin: 12px 0; line-height: 1.5;">${m.summary}</p>
+          ${m.summary ? `<p style="font-size: 14.5px; color: var(--color-body); margin: 12px 0; line-height: 1.5;">${m.summary}</p>` : ''}
         </div>
 
         <div style="border-top: 1px solid var(--color-hairline); padding-top: 12px; font-size: 13.5px; color: var(--color-mute); display: flex; flex-direction: column; gap: 4px;">
-          <div>📍 ${m.location}</div>
-          <div>📞 ${m.phone}</div>
-          <div>💬 카톡: <strong style="color: var(--color-ink);">${m.kakaoId}</strong></div>
+          ${m.location ? `<div>📍 ${m.location}</div>` : ''}
+          ${m.phone ? `<div>📞 ${m.phone}</div>` : ''}
+          ${m.kakaoId ? `<div>💬 카톡: <strong style="color: var(--color-ink);">${m.kakaoId}</strong></div>` : ''}
           ${(m.Pemail || m.googleEmail) ? `<div>📧 이메일: <strong style="color: var(--color-ink);">${m.Pemail || m.googleEmail}</strong></div>` : ''}
         </div>
       </div>
@@ -845,15 +847,15 @@ const App = {
       name: googleUser ? (googleUser.displayName || "구글 연동 원우") : "구글 소셜 원우",
       cohort: 13,
       role: "regular",
-      company: "구글 소셜 연동 기업",
-      industry: "정보통신업",
-      industryIcon: "💻",
-      location: "부산 센텀",
-      phone: googleUser && googleUser.phoneNumber ? googleUser.phoneNumber : "010-3849-5501",
-      kakaoId: googleEmail ? googleEmail.split("@")[0] : "google_user",
+      company: "",
+      industry: "",
+      industryIcon: "",
+      location: "",
+      phone: googleUser && googleUser.phoneNumber ? googleUser.phoneNumber : "",
+      kakaoId: googleEmail ? googleEmail.split("@")[0] : "",
       Pemail: googleEmail || "",
       avatarUrl: googleUser && googleUser.photoURL ? googleUser.photoURL : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-      summary: "Google 계정 원클릭 소셜 가입 13기 원우",
+      summary: "",
       feePaid: false,
       feeDate: "",
       joinDate: new Date().toISOString().split("T")[0]
@@ -890,8 +892,8 @@ const App = {
     const kakaoId = document.getElementById("regKakao").value.trim();
     const locationEl = document.getElementById("regLocation");
     const summaryEl = document.getElementById("regSummary");
-    const location = locationEl ? locationEl.value.trim() : "부산";
-    const summary = summaryEl ? summaryEl.value.trim() : `${company} 주요 사업 서비스`;
+    const location = locationEl ? locationEl.value.trim() : "";
+    const summary = summaryEl ? summaryEl.value.trim() : "";
 
     if (!username || !password || !name || !company || !phone || !kakaoId) {
       this.showToast("⚠️ 필수 정보(희망 아이디, 비밀번호, 성명, 회사명, 연락처, 단톡방 프로필 명)를 모두 입력해 주세요.");
@@ -915,11 +917,11 @@ const App = {
       company,
       industry,
       industryIcon: (this.getIndustryMetadata(industry) || { icon: "💻" }).icon,
-      location: location || "부산",
+      location: location || "",
       phone,
       kakaoId,
       avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-      summary: summary || `${company} 주요 사업 서비스`,
+      summary: summary || "",
       feePaid: false,
       feeDate: "",
       joinDate: new Date().toISOString().split("T")[0]
