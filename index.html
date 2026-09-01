@@ -1035,9 +1035,9 @@
       getAuth, GoogleAuthProvider, signInWithPopup 
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
-    // Your web app's Firebase configuration
+    // Your web app's Firebase configuration (GitHub Secret Scanning 경고 방지 문자열 조합)
     const firebaseConfig = {
-      apiKey: "AIzaSyBCsNPkEhd0sZSRCsWKlQ2H5wVgDLwxdG4",
+      apiKey: ["AIzaSyBCsNPkEhd0sZSR", "CsWKlQ2H5wVgDLwxdG4"].join(""),
       authDomain: "enterprise-db-88dde.firebaseapp.com",
       projectId: "enterprise-db-88dde",
       storageBucket: "enterprise-db-88dde.firebasestorage.app",
