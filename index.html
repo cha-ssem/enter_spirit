@@ -196,17 +196,21 @@
 
       <!-- Restricted Notice Card -->
       <div id="restrictedNoticeCard" class="product-card"
-        style="display: none; text-align: center; max-width: 520px; margin: 32px auto; padding: 40px 24px;">
+        style="display: none; text-align: center; max-width: 580px; margin: 32px auto; padding: 40px 28px; border: 1px solid var(--color-hairline); box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
         <span class="corner-square"></span>
-        <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
-        <h3 style="font-size: 24px; margin-bottom: 8px;">정회원 전용 디렉토리 열람 권한</h3>
-        <p style="color: var(--color-mute); font-size: 15px; margin-bottom: 24px;">
-          미가입 비회원 및 일반회원 등급은 전체 원우 디렉토리를 열람하실 수 없습니다.<br />
-          <strong>회원가입 및 회비 납부가 완료되면 정회원으로 승인되어 전체 원우 디렉토리가 개방됩니다.</strong>
+        <div style="font-size: 44px; margin-bottom: 14px;">🔒</div>
+        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--color-ink);">정회원 전용 디렉토리 열람 안내</h3>
+        <p style="color: var(--color-body); font-size: 15px; margin-bottom: 24px; line-height: 1.6;">
+          원우 회원가입 후 <strong>정회원 회비(100,000원)</strong>를 납부하시면 즉시 정회원으로 승인되어 13기 전체 원우 인맥 디렉토리를 자유롭게 열람하실 수 있습니다.
         </p>
-        <button class="btn btn-primary" onclick="App.openRegisterModal()">
-          📝 원우 회원가입 신청하기 →
-        </button>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="App.openRegisterModal()">
+            📝 원우 회원가입 신청하기 →
+          </button>
+          <button class="btn btn-outline" style="border-color: #16a34a; color: #16a34a; font-weight: 700;" onclick="App.openAccountInfoModal()">
+            💳 회비 납부 계좌 확인하기
+          </button>
+        </div>
       </div>
 
       <!-- Member Grid Container -->
@@ -1017,6 +1021,39 @@
         <button type="button" onclick="App.closeReceiptZoomModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute);">&times;</button>
       </div>
       <img id="receiptZoomImage" src="" alt="영수증 이미지" style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: 8px; border: 1px solid var(--color-hairline);" />
+    </div>
+  </div>
+
+  <!-- 💡 4. 회비 납부 계좌 안내 팝업 모달 -->
+  <div id="accountInfoModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeAccountInfoModal()">
+    <div class="modal-content" style="max-width: 460px; width: 90%; padding: 28px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 14px; margin-bottom: 20px;">
+        <h3 style="font-size: 20px; font-weight: 700; margin: 0; color: var(--color-ink); display: flex; align-items: center; gap: 8px;">
+          💳 13기 정회원 회비 납부 계좌 안내
+        </h3>
+        <button type="button" onclick="App.closeAccountInfoModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute); line-height: 1;">&times;</button>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 13px; color: var(--color-mute); margin-bottom: 6px; font-weight: 700;">기업가정신 13기 공식 지정 회비 계좌</div>
+        <div style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 8px; letter-spacing: 0.5px;">
+          카카오뱅크 79422963241
+        </div>
+        <div style="font-size: 15px; font-weight: 700; color: #16a34a;">
+          예금주: 김정순 <span style="font-size: 13.5px; color: var(--color-ink); font-weight: 400;">(정회원 회비: 100,000원)</span>
+        </div>
+      </div>
+
+      <p style="font-size: 13.5px; color: var(--color-mute); margin-bottom: 20px; line-height: 1.5;">
+        💡 이체 시 <strong>'성명 (예: 홍길동)'</strong>으로 입금해 주시면 확인 후 관리자가 정회원 권한 승인 및 장부 수입 등록을 완료해 드립니다.
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 10px;">
+        <button type="button" class="btn btn-outline" style="border-color: #6366f1; color: #4f46e5; font-weight: 700;" onclick="App.copyAccountToClipboard()">
+          📋 계좌번호 복사하기
+        </button>
+        <button type="button" class="btn btn-primary" onclick="App.closeAccountInfoModal()">확인 및 닫기</button>
+      </div>
     </div>
   </div>
 

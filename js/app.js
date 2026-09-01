@@ -2024,6 +2024,36 @@ const App = {
     }
   },
 
+  /* 회비 계좌 팝업 모달 관련 */
+  openAccountInfoModal() {
+    const modal = document.getElementById("accountInfoModal");
+    if (!modal) return;
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.style.zIndex = "9999";
+  },
+
+  closeAccountInfoModal() {
+    const modal = document.getElementById("accountInfoModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+  },
+
+  copyAccountToClipboard() {
+    const accountNum = "79422963241";
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(accountNum).then(() => {
+        this.showToast("📋 카카오뱅크 79422963241 (예금주: 김정순) 계좌번호가 클립보드에 복사되었습니다!");
+      }).catch(() => {
+        this.showToast("📋 회비 계좌: 카카오뱅크 79422963241 (예금주: 김정순)");
+      });
+    } else {
+      this.showToast("📋 회비 계좌: 카카오뱅크 79422963241 (예금주: 김정순)");
+    }
+  },
+
   showToast(message) {
     const toast = document.getElementById("toastNotification");
     if (!toast) return;
