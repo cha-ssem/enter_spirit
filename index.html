@@ -1064,6 +1064,85 @@
     </div>
   </div>
 
+  <!-- 💡 2-2. 장부 내역 수정 팝업 모달 -->
+  <div id="editLedgerModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeEditLedgerModal()">
+    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 26px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+        <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">✏️ 장부 내역 수정</h4>
+        <button type="button" onclick="App.closeEditLedgerModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+      </div>
+      <form id="editLedgerForm" onsubmit="App.saveEditLedger(event)">
+        <input type="hidden" id="editLedgerId" />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">구분 항목 *</label>
+            <select id="editLedgerType" class="form-input" onchange="App.handleEditLedgerTypeChange(this.value)">
+              <option value="sponsorship">🟢 찬조금 수입 (찬조자/찬조물품)</option>
+              <option value="fee">🟢 정회원 회비 수입</option>
+              <option value="interest">🟢 예금 이자 수입</option>
+              <option value="expense_dining">🔴 네트워킹/회식 지출 (영수증, 장소, 인원)</option>
+              <option value="expense_gift">🔴 수료식 선물 및 행사 지출 (영수증)</option>
+              <option value="expense_other">🔴 기타 운영 지출</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">성명 / 찬조자 / 집행 주체 *</label>
+            <input type="text" id="editLedgerName" class="form-input" required />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">내역 설명 *</label>
+            <input type="text" id="editLedgerItem" class="form-input" required />
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">금액 (원) *</label>
+            <input type="number" id="editLedgerAmount" class="form-input" required style="font-weight: 700;" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">일자 *</label>
+            <input type="date" id="editLedgerDate" class="form-input" required />
+          </div>
+          <div id="editLedgerLocationBox">
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">📍 장소 / 지출처 (선택)</label>
+            <input type="text" id="editLedgerLocation" class="form-input" placeholder="예: 부산 센텀 명가" />
+          </div>
+        </div>
+
+        <div id="editLedgerAttendeesBox" style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">👥 참여 인원 (선택)</label>
+          <input type="text" id="editLedgerAttendees" class="form-input" placeholder="예: 18명" />
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">💬 비고 및 상세 메모</label>
+          <input type="text" id="editLedgerNote" class="form-input" placeholder="비고 입력" />
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">🧾 영수증 이미지 변경 (선택)</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="file" id="editLedgerReceiptFile" class="form-input" accept="image/*" style="padding: 6px 10px;" />
+            <div id="editLedgerReceiptPreview" style="display: none; align-items: center; gap: 6px;">
+              <span style="font-size: 12px; color: #16a34a; font-weight: 700;">기존 영수증 있음</span>
+              <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; color: #ef4444; border-color: #ef4444;" onclick="App.removeEditLedgerReceipt()">삭제</button>
+            </div>
+          </div>
+          <input type="hidden" id="editLedgerExistingReceiptUrl" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.closeEditLedgerModal()">취소</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700;">💾 수정사항 저장 및 동기화</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- 💡 3. 영수증 이미지 확대 보기 팝업 모달 -->
   <div id="receiptZoomModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeReceiptZoomModal()">
     <div class="modal-content" style="max-width: 600px; width: 92%; padding: 20px; border-radius: 12px; text-align: center;">

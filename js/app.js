@@ -1989,20 +1989,17 @@ const App = {
       this.openFeePayModal(m);
     } else {
       // 납부완료 -> 미납 전환 시
-      if (!confirm(`${m.name} 회원의 회비 납부 상태를 [미납]으로 전환하시겠습니까?`)) return;
+      if (!confirm(`${m.name} 회원의 회비 납부 상태를 [미납]으로 전환하시겠습니까?\n(해당 회원의 장부상 회비 납부 내역도 함께 자동 삭제됩니다)`)) return;
 
       m.feePaid = false;
       m.feeDate = "-";
       if (m.role === "full") {
         m.role = "regular";
-        this.showToast(`⚠️ ${m.name} 회원의 회비 미납 처리로 일반회원(regular) 조정되었습니다.`);
-      } else {
-        this.showToast(`${m.name} 회원이 회비 미납 상태로 전환되었습니다.`);
       }
 
       StorageService.saveMembers(this.members);
 
-      // Firestore 동기화
+      // 1) Firestore members 컬렉션 미납 동기화
       if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
         try {
           await window.FS.setDoc(window.FS.doc(window.db, "members", memberId), { 
@@ -2015,7 +2012,29 @@ const App = {
         }
       }
 
+      // 2) 💡 장부(ledger) 상의 해당 회원 회비 납부 내역 자동 삭제 연동!
+      const memberName = m.name ? m.name.trim() : "";
+      const feeLedgerItemsToDelete = this.ledger.filter(item => 
+        (item.type === "fee" || item.category === "정회원 회비") && 
+        item.name && item.name.trim() === memberName
+      );
+
+      if (feeLedgerItemsToDelete.length > 0) {
+        const deletedIds = feeLedgerItemsToDelete.map(item => item.id);
+        this.ledger = this.ledger.filter(item => !deletedIds.includes(item.id));
+        StorageService.saveLedger(this.ledger);
+
+        // Firestore ledger 문서 삭제
+        if (window.db && window.FS && window.FS.deleteDoc && window.FS.doc) {
+          deletedIds.forEach(delId => {
+            window.FS.deleteDoc(window.FS.doc(window.db, "ledger", delId)).catch(console.warn);
+          });
+        }
+      }
+
+      this.showToast(`⚠️ ${m.name} 회원이 [미납] 처리되었으며, 장부상의 회비 내역(${feeLedgerItemsToDelete.length}건)이 함께 삭제되었습니다.`);
       this.renderAdmin();
+      this.renderLedger();
     }
   },
 
@@ -2244,9 +2263,14 @@ const App = {
           </td>
           <td style="color: var(--color-mute); font-size: 12.5px;">${this.escapeHtml(item.note || '-')}</td>
           <td>
-            <button class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; border-color: #ef4444; color: #ef4444;" onclick="App.deleteLedgerItem('${this.escapeHtml(item.id)}')">
-              🗑️
-            </button>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <button class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; border-color: #3b82f6; color: #2563eb;" onclick="App.openEditLedgerModal('${this.escapeHtml(item.id)}')" title="장부 내역 수정">
+                ✏️
+              </button>
+              <button class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; border-color: #ef4444; color: #ef4444;" onclick="App.deleteLedgerItem('${this.escapeHtml(item.id)}')" title="장부 내역 삭제">
+                🗑️
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -2399,6 +2423,201 @@ const App = {
     }
 
     this.renderAdmin();
+    this.renderLedger();
+  },
+
+  /* 장부 수정 모달 관련 */
+  openEditLedgerModal(id) {
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 장부 수정 권한이 필요합니다.");
+      return;
+    }
+
+    const item = this.ledger.find(l => l.id === id);
+    if (!item) {
+      this.showToast("⚠️ 수정할 장부 내역을 찾을 수 없습니다.");
+      return;
+    }
+
+    const modal = document.getElementById("editLedgerModal");
+    if (!modal) return;
+
+    document.getElementById("editLedgerId").value = item.id;
+    document.getElementById("editLedgerType").value = item.type || "sponsorship";
+    document.getElementById("editLedgerName").value = item.name || "";
+    document.getElementById("editLedgerItem").value = item.item || "";
+    document.getElementById("editLedgerAmount").value = item.amount || 0;
+
+    // 날짜 포맷팅
+    let dateStr = item.date || "";
+    if (typeof dateStr === "object" && dateStr && dateStr.seconds) {
+      dateStr = new Date(dateStr.seconds * 1000).toISOString().split("T")[0];
+    }
+    document.getElementById("editLedgerDate").value = dateStr || new Date().toLocaleDateString("sv-SE");
+
+    document.getElementById("editLedgerLocation").value = item.location && item.location !== "-" ? item.location : "";
+    document.getElementById("editLedgerAttendees").value = item.attendees && item.attendees !== "-" ? item.attendees : "";
+    document.getElementById("editLedgerNote").value = item.note && item.note !== "-" ? item.note : "";
+
+    // 영수증 미리보기 및 기존 URL 관리
+    const previewEl = document.getElementById("editLedgerReceiptPreview");
+    const existingReceiptInput = document.getElementById("editLedgerExistingReceiptUrl");
+    const fileInput = document.getElementById("editLedgerReceiptFile");
+    if (fileInput) fileInput.value = "";
+
+    if (item.receiptUrl) {
+      if (existingReceiptInput) existingReceiptInput.value = item.receiptUrl;
+      if (previewEl) previewEl.style.display = "flex";
+    } else {
+      if (existingReceiptInput) existingReceiptInput.value = "";
+      if (previewEl) previewEl.style.display = "none";
+    }
+
+    this.handleEditLedgerTypeChange(item.type);
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.style.zIndex = "9999";
+  },
+
+  closeEditLedgerModal() {
+    const modal = document.getElementById("editLedgerModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+  },
+
+  handleEditLedgerTypeChange(type) {
+    const locationBox = document.getElementById("editLedgerLocationBox");
+    const attendeesBox = document.getElementById("editLedgerAttendeesBox");
+
+    if (type === "expense_dining") {
+      if (locationBox) locationBox.style.display = "block";
+      if (attendeesBox) attendeesBox.style.display = "block";
+    } else {
+      if (locationBox) locationBox.style.display = "block";
+      if (attendeesBox) attendeesBox.style.display = "none";
+    }
+  },
+
+  removeEditLedgerReceipt() {
+    const existingReceiptInput = document.getElementById("editLedgerExistingReceiptUrl");
+    const previewEl = document.getElementById("editLedgerReceiptPreview");
+    if (existingReceiptInput) existingReceiptInput.value = "";
+    if (previewEl) previewEl.style.display = "none";
+    this.showToast("🧾 기존 영수증 이미지가 제거되었습니다. 저장 시 반영됩니다.");
+  },
+
+  async saveEditLedger(e) {
+    if (e) e.preventDefault();
+
+    const id = document.getElementById("editLedgerId").value;
+    const itemIndex = this.ledger.findIndex(l => l.id === id);
+    if (itemIndex === -1) {
+      this.showToast("⚠️ 수정 대상 장부 항목을 찾을 수 없습니다.");
+      return;
+    }
+
+    const type = document.getElementById("editLedgerType").value;
+    const name = document.getElementById("editLedgerName").value.trim();
+    const itemDesc = document.getElementById("editLedgerItem").value.trim();
+    const amount = parseInt(document.getElementById("editLedgerAmount").value, 10);
+    const date = document.getElementById("editLedgerDate").value;
+    const location = document.getElementById("editLedgerLocation").value.trim();
+    const attendees = document.getElementById("editLedgerAttendees").value.trim();
+    const note = document.getElementById("editLedgerNote").value.trim();
+    const fileInput = document.getElementById("editLedgerReceiptFile");
+    let receiptUrl = document.getElementById("editLedgerExistingReceiptUrl").value;
+
+    if (!name || !itemDesc || isNaN(amount) || amount <= 0 || !date) {
+      this.showToast("⚠️ 올바른 성명, 내역 설명, 금액 및 일자를 입력해 주세요.");
+      return;
+    }
+
+    let category = "기타 지출";
+    if (type === "sponsorship") category = "찬조금";
+    else if (type === "fee") category = "정회원 회비";
+    else if (type === "interest") category = "예금 이자";
+    else if (type === "expense_dining") category = "회식/네트워킹 지출";
+    else if (type === "expense_gift") category = "선물/행사 지출";
+
+    // 신규 영수증 이미지 첨부 시 HTML5 Canvas 경량화
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      receiptUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const maxDim = 400;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.75));
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const updatedEntry = {
+      ...this.ledger[itemIndex],
+      date,
+      type,
+      category,
+      name,
+      item: itemDesc,
+      amount,
+      location: location || "-",
+      attendees: attendees || "-",
+      note: note || "-",
+      receiptUrl: receiptUrl || ""
+    };
+
+    this.ledger[itemIndex] = updatedEntry;
+    StorageService.saveLedger(this.ledger);
+
+    // Firestore 동기화
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "ledger", id), updatedEntry, { merge: true });
+      } catch (err) {
+        console.warn("Firestore 장부 내역 수정 동기화 경고:", err);
+      }
+    }
+
+    // 만약 수정된 항목이 '정회원 회비'인 경우, 해당 회원의 납부일자도 함께 동기화
+    if (type === "fee") {
+      const matchedMember = this.members.find(m => m.name && m.name.trim() === name);
+      if (matchedMember) {
+        matchedMember.feeDate = date;
+        StorageService.saveMembers(this.members);
+        if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+          window.FS.setDoc(window.FS.doc(window.db, "members", matchedMember.id), { feeDate: date }, { merge: true }).catch(console.warn);
+        }
+        this.renderAdmin();
+      }
+    }
+
+    this.closeEditLedgerModal();
+    this.showToast(`🎉 장부 내역('${itemDesc}')이 성공적으로 수정 및 동기화되었습니다!`);
     this.renderLedger();
   },
 
