@@ -394,8 +394,14 @@ h4 {
 /* NVIDIA CAD Product Cards (2px Corner + 12px Corner Square Motif) */
 .nvidia-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
+}
+
+@media (max-width: 992px) {
+  .nvidia-card-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Members 5-Column Grid Layout (1줄에 5개씩 배치) */
@@ -405,14 +411,14 @@ h4 {
   gap: 16px;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .member-grid-5col {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 992px) {
   .member-grid-5col {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
@@ -668,7 +674,7 @@ h4 {
 
 /* Main Layout Container */
 .main-wrapper {
-  max-width: 1480px;
+  max-width: 1280px;
   margin: 32px auto 80px auto;
   padding: 0 24px;
 }
