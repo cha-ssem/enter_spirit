@@ -2699,7 +2699,7 @@ const App = {
     this.renderLedger();
   },
 
-  /* 영수증 팝업 모달 관련 */
+  /* 이미지(약도/영수증) 팝업 모달 관련 */
   openReceiptZoomModal(url, title) {
     const modal = document.getElementById("receiptZoomModal");
     const img = document.getElementById("receiptZoomImage");
@@ -2707,10 +2707,17 @@ const App = {
     if (!modal || !img) return;
 
     img.src = url;
-    if (titleEl) titleEl.textContent = `🧾 ${title} 영수증`;
+    if (titleEl) {
+      if (title && (title.includes("약도") || title.includes("위치") || title.includes("오시는 길"))) {
+        titleEl.textContent = `📍 ${title}`;
+      } else {
+        titleEl.textContent = `🧾 ${title || '상세'} 영수증`;
+      }
+    }
 
     modal.classList.add("active");
     modal.style.display = "flex";
+    modal.style.zIndex = "9999";
   },
 
   closeReceiptZoomModal() {

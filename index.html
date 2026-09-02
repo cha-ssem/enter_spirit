@@ -8,7 +8,8 @@
   <meta name="description" content="기업가 정신 13기 원우들을 위한 회원 디렉토리, 주차별 강의 일정, 회비 및 네트워킹 장부 관리 서비스" />
 
   <!-- Content Security Policy (웹 표준 다계층 통신 보안) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebaseio.com; frame-src https://*.firebaseapp.com https://accounts.google.com;" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebaseio.com; frame-src https://*.firebaseapp.com https://accounts.google.com;" />
 
   <!-- Open Graph / KakaoTalk Link Sharing Preview -->
   <meta property="og:type" content="website" />
@@ -43,7 +44,9 @@
       </ul>
 
       <div style="display: flex; align-items: center; gap: 14px;">
-        <span id="topNavUserWelcomeText" style="font-size: 14px; font-weight: 600; color: #ffffff; cursor: pointer; display: none;" onclick="App.switchTab('profile')" title="내 프로필 페이지로 이동"></span>
+        <span id="topNavUserWelcomeText"
+          style="font-size: 14px; font-weight: 600; color: #ffffff; cursor: pointer; display: none;"
+          onclick="App.switchTab('profile')" title="내 프로필 페이지로 이동"></span>
         <button id="topNavUserBtn" class="btn btn-primary btn-sm" onclick="App.openRegisterModal()">
           📝 회원가입하기 →
         </button>
@@ -147,6 +150,32 @@
             <span class="btn-ghost-link">Learn More →</span>
           </div>
         </div>
+
+        <div class="product-card"
+          onclick="App.openReceiptZoomModal('images/location.png', '13기 강의장 위치 및 오시는 길 (산학협력관 7층 동의시네마홀)')"
+          style="cursor: pointer;">
+          <span class="corner-square"></span>
+          <div>
+            <span class="pill-tag-nvidia" style="margin-bottom: 12px;">CAMPUS LOCATION</span>
+            <h3 style="font-size: 20px; margin: 12px 0 8px 0;">강의장 위치 & 오시는 길</h3>
+            <p style="font-size: 14.5px; color: var(--color-body); line-height: 1.4; margin-bottom: 12px;">
+              📍 산학협력관 7층 동의시네마홀
+            </p>
+            <div
+              style="width: 100%; height: 130px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--color-hairline); background: #f1f5f9; position: relative;">
+              <img src="images/location.png" alt="강의장 오시는 길 약도"
+                style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;"
+                onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+              <span
+                style="position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.75); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; pointer-events: none;">
+                🔍 약도 확대
+              </span>
+            </div>
+          </div>
+          <div style="margin-top: 16px;">
+            <span class="btn-ghost-link">약도 크게 보기 →</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -202,16 +231,21 @@
         style="display: none; text-align: center; max-width: 580px; margin: 32px auto; padding: 40px 28px; border: 1px solid var(--color-hairline); box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
         <span class="corner-square"></span>
         <div style="font-size: 44px; margin-bottom: 14px;">🔒</div>
-        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--color-ink);">정회원 전용 디렉토리 열람 안내</h3>
+        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--color-ink);">정회원 전용 디렉토리 열람 안내
+        </h3>
         <p style="color: var(--color-body); font-size: 15px; margin-bottom: 24px; line-height: 1.6;">
           원우 회원가입 후 <strong>정회원 회비</strong>를 납부하시면 정회원으로 승인되어<br />
           13기 전체 원우 인맥 디렉토리를 자유롭게 열람하실 수 있습니다.
         </p>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
-          <button id="restrictedRegisterBtn" class="btn btn-primary" style="width: 280px; max-width: 100%; height: 46px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; white-space: nowrap;" onclick="App.openRegisterModal()">
+          <button id="restrictedRegisterBtn" class="btn btn-primary"
+            style="width: 280px; max-width: 100%; height: 46px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; white-space: nowrap;"
+            onclick="App.openRegisterModal()">
             📝 회원가입 및 로그인하기 →
           </button>
-          <button class="btn btn-outline" style="width: 280px; max-width: 100%; height: 46px; display: inline-flex; align-items: center; justify-content: center; border-color: #16a34a; color: #16a34a; font-weight: 700; white-space: nowrap;" onclick="App.openAccountInfoModal()">
+          <button class="btn btn-outline"
+            style="width: 280px; max-width: 100%; height: 46px; display: inline-flex; align-items: center; justify-content: center; border-color: #16a34a; color: #16a34a; font-weight: 700; white-space: nowrap;"
+            onclick="App.openAccountInfoModal()">
             💳 회비 납부 계좌 확인하기
           </button>
         </div>
@@ -242,7 +276,8 @@
 
           <!-- 💡 관리자 전용: 마지막 강의 일정 아래 신규 강의 추가 단추 -->
           <div id="adminAddLectureBtnContainer" style="display: none; margin-top: 24px;">
-            <button type="button" class="btn btn-primary" onclick="App.openAddLectureModal()" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; font-weight: 700; gap: 8px;">
+            <button type="button" class="btn btn-primary" onclick="App.openAddLectureModal()"
+              style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; font-weight: 700; gap: 8px;">
               ➕ 13기 신규 강의 일정 추가하기 (관리자 전용)
             </button>
           </div>
@@ -257,7 +292,8 @@
             <span style="font-size: 12px; color: var(--color-mute);">2026.03</span>
           </div>
           <h4 style="font-size: 18px; margin-bottom: 4px; font-weight: 700; color: var(--color-ink);">13기 교육과정 브로슈어</h4>
-          <p style="font-size: 12.5px; color: var(--color-primary); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 4px;">
+          <p
+            style="font-size: 12.5px; color: var(--color-primary); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 4px;">
             🔍 이미지를 클릭하면 확대 보기 가능
           </p>
 
@@ -394,7 +430,8 @@
               </div>
               <div>
                 <label
-                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기업가정신 포럼 13기(2026-2) 단톡방 내 프로필 명</label>
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기업가정신
+                  포럼 13기(2026-2) 단톡방 내 프로필 명</label>
                 <input type="text" id="profileKakao" class="form-input" required />
               </div>
             </div>
@@ -402,12 +439,14 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
               <div>
                 <label
-                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🌐 회사 홈페이지 / 웹사이트 URL (선택)</label>
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🌐
+                  회사 홈페이지 / 웹사이트 URL (선택)</label>
                 <input type="url" id="profilePageURL" class="form-input" placeholder="예: https://www.koreatech.com" />
               </div>
               <div>
                 <label
-                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📧 개인 이메일 (Email)</label>
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📧
+                  개인 이메일 (Email)</label>
                 <input type="email" id="profilePemail" class="form-input" placeholder="예: name@example.com" />
               </div>
             </div>
@@ -435,16 +474,23 @@
       </div>
 
       <!-- Member Table Header & Actions -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
         <h3 style="font-size: 20px; margin: 0;">📋 회원가입 & 회비 납부 상태 관리</h3>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="bulkFeePayBtn" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #16a34a; border-color: #16a34a;" onclick="App.openBulkFeePayModal()">
+          <button id="bulkFeePayBtn" class="btn btn-primary btn-sm"
+            style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #16a34a; border-color: #16a34a;"
+            onclick="App.openBulkFeePayModal()">
             💳 선택 회원 일괄 납부 (<span id="bulkSelectedCount">0</span>명)
           </button>
-          <button class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-color: #16a34a; color: #16a34a; background: #f0fdf4;" onclick="App.setAllFeeDatesToToday()">
+          <button class="btn btn-outline btn-sm"
+            style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-color: #16a34a; color: #16a34a; background: #f0fdf4;"
+            onclick="App.setAllFeeDatesToToday()">
             📅 납부일자 오늘로 일괄 설정
           </button>
-          <button class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-color: #6366f1; color: #4f46e5; background: #f5f3ff;" onclick="App.openMergeAccountModal()">
+          <button class="btn btn-outline btn-sm"
+            style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-color: #6366f1; color: #4f46e5; background: #f5f3ff;"
+            onclick="App.openMergeAccountModal()">
             🔗 중복 계정 감지 및 통합
           </button>
         </div>
@@ -454,7 +500,8 @@
           <thead>
             <tr>
               <th style="width: 44px; text-align: center;">
-                <input type="checkbox" id="selectAllMembersCheck" onchange="App.toggleSelectAllMembers(this.checked)" title="전체 선택/해제" style="cursor: pointer; width: 16px; height: 16px;" />
+                <input type="checkbox" id="selectAllMembersCheck" onchange="App.toggleSelectAllMembers(this.checked)"
+                  title="전체 선택/해제" style="cursor: pointer; width: 16px; height: 16px;" />
               </th>
               <th>성명 (기수)</th>
               <th>회사명</th>
@@ -474,9 +521,12 @@
 
 
       <!-- Ledger Section -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
         <h3 style="font-size: 20px; margin: 0;">💰 네트워킹 찬조 & 회식·행사 지출 장부</h3>
-        <button type="button" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer;" onclick="App.openInitialBalanceModal(event)">
+        <button type="button" class="btn btn-outline btn-sm"
+          style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer;"
+          onclick="App.openInitialBalanceModal(event)">
           ⚙️ 이월/기본 잔고 설정
         </button>
       </div>
@@ -514,7 +564,9 @@
         <form id="ledgerForm">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">구분 항목 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">구분
+                항목 *</label>
               <select id="ledgerType" class="form-input" onchange="App.handleLedgerTypeChange(this.value)">
                 <option value="sponsorship">🟢 찬조금 수입 (찬조자/찬조물품)</option>
                 <option value="fee">🟢 정회원 회비 수입</option>
@@ -525,41 +577,58 @@
               </select>
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명 / 찬조자 / 집행 주체 *</label>
-              <input type="text" id="ledgerName" class="form-input" placeholder="예: 박서연 관리자, 김민준 원우, 13기 집행부" required />
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명
+                / 찬조자 / 집행 주체 *</label>
+              <input type="text" id="ledgerName" class="form-input" placeholder="예: 박서연 관리자, 김민준 원우, 13기 집행부"
+                required />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">내역 설명 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">내역
+                설명 *</label>
               <input type="text" id="ledgerItem" class="form-input" placeholder="예: 13기 개강 환영회, 9월 결산 이자 수입" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">금액 (원) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">금액
+                (원) *</label>
               <input type="number" id="ledgerAmount" class="form-input" placeholder="100000" required />
             </div>
           </div>
 
           <!-- 동적 지출 상세 옵션 구역 (회식 장소, 인원) -->
-          <div id="ledgerExpenseOptions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div id="ledgerExpenseOptions"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📍 회식 장소 / 지출처 (선택)</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📍
+                회식 장소 / 지출처 (선택)</label>
               <input type="text" id="ledgerLocation" class="form-input" placeholder="예: 부산 해운대 센텀 한우 명가" />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">👥 참여 인원 (선택)</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">👥
+                참여 인원 (선택)</label>
               <input type="text" id="ledgerAttendees" class="form-input" placeholder="예: 18명" />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🧾 영수증 이미지 첨부 (자동 경량화)</label>
-              <input type="file" id="ledgerReceiptFile" class="form-input" accept="image/*" style="padding: 6px 10px;" />
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🧾
+                영수증 이미지 첨부 (자동 경량화)</label>
+              <input type="file" id="ledgerReceiptFile" class="form-input" accept="image/*"
+                style="padding: 6px 10px;" />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">💬 비고 및 상세 메모</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">💬
+                비고 및 상세 메모</label>
               <input type="text" id="ledgerNote" class="form-input" placeholder="예: 와인 2병 별도 찬조 포함" />
             </div>
           </div>
@@ -571,10 +640,12 @@
       </div>
 
       <!-- Ledger Search & Filter Bar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--color-hairline);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--color-hairline);">
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
           <label style="font-size: 13px; font-weight: 700;">필터 구분:</label>
-          <select id="ledgerFilterType" class="form-input" style="padding: 5px 10px; font-size: 13px; width: auto;" onchange="App.renderLedger()">
+          <select id="ledgerFilterType" class="form-input" style="padding: 5px 10px; font-size: 13px; width: auto;"
+            onchange="App.renderLedger()">
             <option value="all">전체 내역 보기</option>
             <option value="sponsorship">🟢 찬조금 수입</option>
             <option value="fee">🟢 정회원 회비 수입</option>
@@ -585,7 +656,9 @@
           </select>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
-          <input type="text" id="ledgerSearchInput" class="form-input" style="padding: 5px 12px; font-size: 13px; width: 220px;" placeholder="성명, 장소, 내역 검색..." oninput="App.renderLedger()" />
+          <input type="text" id="ledgerSearchInput" class="form-input"
+            style="padding: 5px 12px; font-size: 13px; width: 220px;" placeholder="성명, 장소, 내역 검색..."
+            oninput="App.renderLedger()" />
         </div>
       </div>
 
@@ -677,26 +750,31 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
             <div>
               <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사명 *</label>
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사명
+                *</label>
               <input type="text" id="editLecSpeaker" class="form-input" required />
             </div>
             <div>
               <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사 주요 이력 *</label>
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사
+                주요 이력 *</label>
               <input type="text" id="editLecSpeakerBio" class="form-input" required />
             </div>
           </div>
 
           <div style="margin-bottom: 16px;">
             <label
-              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🔗 강사 관련 URL / 약력 링크 (선택)</label>
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🔗
+              강사 관련 URL / 약력 링크 (선택)</label>
             <input type="url" id="editLecSpeakerUrl" class="form-input" placeholder="예: https://speaker-profile.com" />
           </div>
 
           <div style="margin-bottom: 16px;">
             <label
-              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📁 강의자료 다운로드 URL (선택)</label>
-            <input type="text" id="editLecMaterialUrl" class="form-input" placeholder="업로드된 다운로드 URL 입력 (입력 시에만 단추 노출)" />
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📁
+              강의자료 다운로드 URL (선택)</label>
+            <input type="text" id="editLecMaterialUrl" class="form-input"
+              placeholder="업로드된 다운로드 URL 입력 (입력 시에만 단추 노출)" />
           </div>
 
           <div style="margin-bottom: 24px;">
@@ -721,61 +799,86 @@
       <span class="corner-square"></span>
       <div class="modal-header">
         <h3 style="font-size: 20px; font-weight: 700; color: #fff;">➕ 신규 주차 강의 커리큘럼 등록 (관리자)</h3>
-        <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeAddLectureModal()">✕ 닫기</button>
+        <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeAddLectureModal()">✕
+          닫기</button>
       </div>
       <div class="modal-body" style="padding-top: 16px;">
         <form id="addNewLectureForm" onsubmit="App.addLecture(event)">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기수 (Cohort) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">기수
+                (Cohort) *</label>
               <input type="number" id="addLecCohort" class="form-input" value="13" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 주차 (숫자) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+                주차 (숫자) *</label>
               <input type="number" id="addLecWeek" class="form-input" placeholder="예: 6" required />
             </div>
           </div>
 
           <div style="margin-bottom: 14px;">
-            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 주제 / 제목 *</label>
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+              주제 / 제목 *</label>
             <input type="text" id="addLecTitle" class="form-input" placeholder="예: 글로벌 시장 진출과 IPO 실무" required />
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 일시 *</label>
-              <input type="text" id="addLecDate" class="form-input" value="2026-09-12 (토) 13:30" placeholder="예: 2026-09-12 (토) 13:30" required />
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+                일시 *</label>
+              <input type="text" id="addLecDate" class="form-input" value="2026-09-12 (토) 13:30"
+                placeholder="예: 2026-09-12 (토) 13:30" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 장소 *</label>
-              <input type="text" id="addLecLocation" class="form-input" value="산학협력관 1층 프라임컨벤션홀" placeholder="예: 산학협력관 1층 프라임컨벤션홀" required />
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+                장소 *</label>
+              <input type="text" id="addLecLocation" class="form-input" value="산학협력관 1층 프라임컨벤션홀"
+                placeholder="예: 산학협력관 1층 프라임컨벤션홀" required />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사 성명 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사
+                성명 *</label>
               <input type="text" id="addLecSpeaker" class="form-input" placeholder="예: 최성원 대표" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사 주요 이력 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강사
+                주요 이력 *</label>
               <input type="text" id="addLecSpeakerBio" class="form-input" placeholder="예: 유니콘 파트너스 대표" required />
             </div>
           </div>
 
           <div style="margin-bottom: 14px;">
-            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🔗 강사 관련 URL / 약력 링크 (선택)</label>
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">🔗
+              강사 관련 URL / 약력 링크 (선택)</label>
             <input type="url" id="addLecSpeakerUrl" class="form-input" placeholder="예: https://speaker-profile.com" />
           </div>
 
           <div style="margin-bottom: 14px;">
-            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📁 강의자료 다운로드 URL (선택)</label>
-            <input type="text" id="addLecMaterialUrl" class="form-input" placeholder="업로드된 다운로드 URL 입력 (입력 시에만 단추 노출)" />
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">📁
+              강의자료 다운로드 URL (선택)</label>
+            <input type="text" id="addLecMaterialUrl" class="form-input"
+              placeholder="업로드된 다운로드 URL 입력 (입력 시에만 단추 노출)" />
           </div>
 
           <div style="margin-bottom: 20px;">
-            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의 세부 내용 및 개요 *</label>
-            <textarea id="addLecDescription" class="form-input" rows="3" placeholder="강의 주요 핵심 내용과 학습 목표..." required></textarea>
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">강의
+              세부 내용 및 개요 *</label>
+            <textarea id="addLecDescription" class="form-input" rows="3" placeholder="강의 주요 핵심 내용과 학습 목표..."
+              required></textarea>
           </div>
 
           <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -813,21 +916,32 @@
   <div id="registerModal" class="modal-overlay" onclick="if(event.target === this) App.closeRegisterModal();">
     <div class="modal-content" style="max-width: 540px; width: 92%; padding: 28px;">
       <span class="corner-square"></span>
-      
+
       <!-- 1. AUTH SELECTION MAIN VIEW (모달 첫 페이지 선택 화면) -->
       <div id="authMainView">
-        <div class="modal-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 16px; margin-bottom: 24px;">
+        <div class="modal-header"
+          style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 16px; margin-bottom: 24px;">
           <div>
             <h3 style="font-size: 22px; font-weight: 700; color: #fff;">👋 원우 회원가입 & 로그인</h3>
           </div>
-          <button class="btn btn-sm btn-outline-on-dark" style="padding: 4px 12px;" onclick="App.closeRegisterModal()">✕ 닫기</button>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 4px 12px;" onclick="App.closeRegisterModal()">✕
+            닫기</button>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <!-- Option 1: Google Social Auth -->
-          <button type="button" class="btn btn-outline" onclick="App.handleGoogleSignUp()" 
+          <button type="button" class="btn btn-outline" onclick="App.handleGoogleSignUp()"
             style="width: 100%; justify-content: center; background: #ffffff; color: #1f1f1f; border-color: #dadce0; font-weight: 700; padding: 14px; gap: 12px; font-size: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-            <svg width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+            <svg width="20" height="20" viewBox="0 0 18 18">
+              <path fill="#4285F4"
+                d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z" />
+              <path fill="#34A853"
+                d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" />
+              <path fill="#FBBC05"
+                d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" />
+              <path fill="#EA4335"
+                d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
+            </svg>
             🔴 Google 계정으로 1초만에 시작하기
           </button>
 
@@ -838,13 +952,13 @@
           </div>
 
           <!-- Option 2: Direct Login -->
-          <button type="button" class="btn btn-outline" onclick="App.switchAuthModalView('login')" 
+          <button type="button" class="btn btn-outline" onclick="App.switchAuthModalView('login')"
             style="width: 100%; justify-content: center; padding: 13px; font-size: 15px; font-weight: 700; gap: 8px;">
             🔑 기존 회원 로그인하기 →
           </button>
 
           <!-- Option 3: New Register Form -->
-          <button type="button" class="btn btn-primary" onclick="App.switchAuthModalView('register')" 
+          <button type="button" class="btn btn-primary" onclick="App.switchAuthModalView('register')"
             style="width: 100%; justify-content: center; padding: 13px; font-size: 15px; font-weight: 700; gap: 8px;">
             📝 신규 회원가입 신청하기 →
           </button>
@@ -853,19 +967,26 @@
 
       <!-- 2. DIRECT LOGIN SUB-VIEW -->
       <div id="authLoginView" style="display: none;">
-        <div class="modal-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 18px;">
-          <button type="button" class="btn btn-sm btn-outline-on-dark" onclick="App.switchAuthModalView('main')">← 뒤로가기</button>
+        <div class="modal-header"
+          style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 18px;">
+          <button type="button" class="btn btn-sm btn-outline-on-dark" onclick="App.switchAuthModalView('main')">←
+            뒤로가기</button>
           <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔑 기존 회원 로그인</h3>
-          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeRegisterModal()">✕</button>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;"
+            onclick="App.closeRegisterModal()">✕</button>
         </div>
 
         <form onsubmit="App.handleDirectLogin(event)">
           <div style="margin-bottom: 14px;">
-            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">회원 아이디 (ID) *</label>
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">회원
+              아이디 (ID) *</label>
             <input type="text" id="loginUsername" class="form-input" placeholder="가입하신 아이디 입력" required />
           </div>
           <div style="margin-bottom: 24px;">
-            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">비밀번호 (Password) *</label>
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">비밀번호
+              (Password) *</label>
             <input type="password" id="loginPassword" class="form-input" placeholder="비밀번호 입력" required />
           </div>
           <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -877,32 +998,43 @@
 
       <!-- 3. NEW REGISTER FORM SUB-VIEW (아이디/비밀번호 ~ 성명 ~ 주요 서비스 요약) -->
       <div id="authRegisterView" style="display: none;">
-        <div class="modal-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 18px;">
-          <button type="button" class="btn btn-sm btn-outline-on-dark" onclick="App.switchAuthModalView('main')">← 뒤로가기</button>
+        <div class="modal-header"
+          style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 18px;">
+          <button type="button" class="btn btn-sm btn-outline-on-dark" onclick="App.switchAuthModalView('main')">←
+            뒤로가기</button>
           <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📝 신규 원우 회원가입</h3>
-          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeRegisterModal()">✕</button>
+          <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;"
+            onclick="App.closeRegisterModal()">✕</button>
         </div>
 
         <form id="registerForm" onsubmit="App.handleRegisterSubmit(event)">
           <!-- ID & Password Fields -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">희망 아이디 (ID) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">희망
+                아이디 (ID) *</label>
               <input type="text" id="regUsername" class="form-input" placeholder="예: hong1234" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">비밀번호 (Password) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">비밀번호
+                (Password) *</label>
               <input type="password" id="regPassword" class="form-input" placeholder="비밀번호 설정" required />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">성명 (이름) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">성명
+                (이름) *</label>
               <input type="text" id="regName" class="form-input" placeholder="예: 홍길동" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">기수 (Cohort) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">기수
+                (Cohort) *</label>
               <select id="regCohort" class="form-input">
                 <option value="13">13기</option>
               </select>
@@ -911,11 +1043,15 @@
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">회사명 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">회사명
+                *</label>
               <input type="text" id="regCompany" class="form-input" placeholder="예: (주)한국테크" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">업종 분류 (KSIC 기준) *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">업종
+                분류 (KSIC 기준) *</label>
               <select id="regIndustry" class="form-input" required>
                 <option value="정보통신업">💻 정보통신업 (IT·소프트웨어·SaaS)</option>
                 <option value="제조업">⚙️ 제조업 (전자·기계·장비·식료품)</option>
@@ -937,19 +1073,26 @@
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">연락처 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">연락처
+                *</label>
               <input type="text" id="regPhone" class="form-input" placeholder="010-0000-0000" required />
             </div>
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">단톡방 프로필 명 *</label>
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">단톡방
+                프로필 명 *</label>
               <input type="text" id="regKakao" class="form-input" placeholder="예: [13기] 홍길동 (한국테크)" required />
             </div>
           </div>
 
           <!-- 입력 항목 바로 아래 액션 단추 구역 -->
-          <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--color-hairline); padding-top: 16px; margin-top: 12px;">
-            <button type="button" class="btn btn-outline btn-sm" style="padding: 8px 18px;" onclick="App.switchAuthModalView('main')">취소</button>
-            <button type="submit" class="btn btn-primary btn-sm" style="padding: 8px 24px; font-size: 14px; font-weight: 700;">📝 회원가입 신청 완료</button>
+          <div
+            style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--color-hairline); padding-top: 16px; margin-top: 12px;">
+            <button type="button" class="btn btn-outline btn-sm" style="padding: 8px 18px;"
+              onclick="App.switchAuthModalView('main')">취소</button>
+            <button type="submit" class="btn btn-primary btn-sm"
+              style="padding: 8px 24px; font-size: 14px; font-weight: 700;">📝 회원가입 신청 완료</button>
           </div>
         </form>
       </div>
@@ -957,13 +1100,18 @@
   </div>
 
   <!-- 💡 중복 회원 계정 통합 (Merge Account) 팝업 모달 창 -->
-  <div id="mergeAccountModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeMergeAccountModal()">
-    <div class="modal-content" style="max-width: 720px; width: 94%; max-height: 90vh; overflow-y: auto; padding: 28px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 16px; margin-bottom: 20px;">
-        <h3 style="font-size: 20px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--color-ink);">
+  <div id="mergeAccountModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeMergeAccountModal()">
+    <div class="modal-content"
+      style="max-width: 720px; width: 94%; max-height: 90vh; overflow-y: auto; padding: 28px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 16px; margin-bottom: 20px;">
+        <h3
+          style="font-size: 20px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--color-ink);">
           🔗 중복 회원 계정 통합 (Merge Accounts)
         </h3>
-        <button type="button" class="modal-close-btn" onclick="App.closeMergeAccountModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute); line-height: 1;">&times;</button>
+        <button type="button" class="modal-close-btn" onclick="App.closeMergeAccountModal()"
+          style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute); line-height: 1;">&times;</button>
       </div>
 
       <div id="mergeAccountModalBody">
@@ -973,22 +1121,30 @@
   </div>
 
   <!-- 💡 1. 정회원 회비 납부 금액 설정 팝업 모달 -->
-  <div id="feePayModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeFeePayModal()">
-    <div class="modal-content" style="max-width: 440px; width: 90%; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
-        <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">🔑 회비 납부 처리 및 장부 자동 수입 연동</h4>
-        <button type="button" onclick="App.closeFeePayModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+  <div id="feePayModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeFeePayModal()">
+    <div class="modal-content"
+      style="max-width: 440px; width: 90%; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+        <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">🔑 회비 납부 처리 및 장부 자동 수입 연동
+        </h4>
+        <button type="button" onclick="App.closeFeePayModal()"
+          style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
       </div>
       <form id="feePayForm" onsubmit="App.confirmFeePayment(event)">
         <input type="hidden" id="feePayMemberId" />
         <div style="margin-bottom: 14px;">
           <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">원우 성명</label>
-          <input type="text" id="feePayMemberName" class="form-input" readonly style="background: #f1f5f9; font-weight: 700;" />
+          <input type="text" id="feePayMemberName" class="form-input" readonly
+            style="background: #f1f5f9; font-weight: 700;" />
         </div>
         <div style="margin-bottom: 14px;">
           <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">납부 회비 금액 (원) *</label>
-          <input type="number" id="feePayAmount" class="form-input" value="100000" placeholder="100000" required style="font-size: 16px; font-weight: 700; color: #16a34a;" />
-          <span style="font-size: 12px; color: var(--color-mute); margin-top: 4px; display: block;">💡 기본 100,000원으로 자동 설정되며 자유롭게 금액을 수정할 수 있습니다.</span>
+          <input type="number" id="feePayAmount" class="form-input" value="100000" placeholder="100000" required
+            style="font-size: 16px; font-weight: 700; color: #16a34a;" />
+          <span style="font-size: 12px; color: var(--color-mute); margin-top: 4px; display: block;">💡 기본 100,000원으로 자동
+            설정되며 자유롭게 금액을 수정할 수 있습니다.</span>
         </div>
         <div style="margin-bottom: 20px;">
           <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">회비 납부 일자 *</label>
@@ -996,63 +1152,83 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
           <button type="button" class="btn btn-outline btn-sm" onclick="App.closeFeePayModal()">취소</button>
-          <button type="submit" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a; font-weight: 700;">✅ 회비 납부 및 장부 자동 연동</button>
+          <button type="submit" class="btn btn-primary btn-sm"
+            style="background: #16a34a; border-color: #16a34a; font-weight: 700;">✅ 회비 납부 및 장부 자동 연동</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- 💡 1-2. 복수 회원 일괄 회비 납부 처리 팝업 모달 -->
-  <div id="bulkFeePayModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeBulkFeePayModal()">
-    <div class="modal-content" style="max-width: 520px; width: 92%; padding: 26px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+  <div id="bulkFeePayModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeBulkFeePayModal()">
+    <div class="modal-content"
+      style="max-width: 520px; width: 92%; padding: 26px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
         <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">💳 선택 회원 회비 일괄 납부 처리</h4>
-        <button type="button" onclick="App.closeBulkFeePayModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+        <button type="button" onclick="App.closeBulkFeePayModal()"
+          style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
       </div>
       <form id="bulkFeePayForm" onsubmit="App.confirmBulkFeePayment(event)">
         <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">납부 대상 회원 (<span id="bulkModalCount" style="color: #16a34a; font-weight: 800;">0</span>명)</label>
-          <div id="bulkModalMemberList" style="max-height: 120px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--color-hairline); border-radius: 8px; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px;">
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">납부 대상 회원 (<span
+              id="bulkModalCount" style="color: #16a34a; font-weight: 800;">0</span>명)</label>
+          <div id="bulkModalMemberList"
+            style="max-height: 120px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--color-hairline); border-radius: 8px; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px;">
             <!-- Rendered dynamically -->
           </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div>
-            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">1인당 회비 금액 (원) *</label>
-            <input type="number" id="bulkFeePayAmount" class="form-input" value="100000" placeholder="100000" required style="font-size: 15px; font-weight: 700; color: #16a34a;" oninput="App.updateBulkTotalEstimate()" />
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">1인당 회비 금액 (원)
+              *</label>
+            <input type="number" id="bulkFeePayAmount" class="form-input" value="100000" placeholder="100000" required
+              style="font-size: 15px; font-weight: 700; color: #16a34a;" oninput="App.updateBulkTotalEstimate()" />
           </div>
           <div>
             <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">회비 납부 일자 *</label>
             <input type="date" id="bulkFeePayDate" class="form-input" required />
           </div>
         </div>
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
+        <div
+          style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
           <span style="font-size: 13px; font-weight: 700; color: #166534;">총 장부 수입 합계액:</span>
           <span id="bulkModalTotalAmount" style="font-size: 18px; font-weight: 800; color: #15803d;">0원</span>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
           <button type="button" class="btn btn-outline btn-sm" onclick="App.closeBulkFeePayModal()">취소</button>
-          <button type="submit" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a; font-weight: 700;">✅ 일괄 납부 승인 및 장부 수입 등록</button>
+          <button type="submit" class="btn btn-primary btn-sm"
+            style="background: #16a34a; border-color: #16a34a; font-weight: 700;">✅ 일괄 납부 승인 및 장부 수입 등록</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- 💡 2. 이월 잔고 (초기 기본 잔액) 설정 팝업 모달 -->
-  <div id="initialBalanceModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeInitialBalanceModal()">
-    <div class="modal-content" style="max-width: 440px; width: 90%; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+  <div id="initialBalanceModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeInitialBalanceModal()">
+    <div class="modal-content"
+      style="max-width: 440px; width: 90%; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
         <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">⚙️ 초기 이월 잔고 설정</h4>
-        <button type="button" onclick="App.closeInitialBalanceModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+        <button type="button" onclick="App.closeInitialBalanceModal()"
+          style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
       </div>
       <form id="initialBalanceForm" onsubmit="App.saveInitialBalance(event)">
         <div style="margin-bottom: 16px;">
-          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">이월/초기 기본 잔액 (원) *</label>
-          <input type="number" id="initialBalanceInput" class="form-input" placeholder="예: 500000" required style="font-size: 16px; font-weight: 700; color: #2563eb;" />
-          <span style="font-size: 12px; color: var(--color-mute); margin-top: 4px; display: block;">💡 설정한 이월 잔액이 장부 실시간 남은 잔액 계산의 기준금으로 반영됩니다.</span>
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">이월/초기 기본 잔액 (원)
+            *</label>
+          <input type="number" id="initialBalanceInput" class="form-input" placeholder="예: 500000" required
+            style="font-size: 16px; font-weight: 700; color: #2563eb;" />
+          <span style="font-size: 12px; color: var(--color-mute); margin-top: 4px; display: block;">💡 설정한 이월 잔액이 장부 실시간
+            남은 잔액 계산의 기준금으로 반영됩니다.</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <button type="button" class="btn btn-outline btn-sm" style="border-color: #ef4444; color: #ef4444; font-weight: 700;" onclick="App.resetInitialBalanceToZero(event)">
+          <button type="button" class="btn btn-outline btn-sm"
+            style="border-color: #ef4444; color: #ef4444; font-weight: 700;"
+            onclick="App.resetInitialBalanceToZero(event)">
             🔄 0원으로 초기화
           </button>
           <div style="display: flex; gap: 8px;">
@@ -1065,11 +1241,15 @@
   </div>
 
   <!-- 💡 2-2. 장부 내역 수정 팝업 모달 -->
-  <div id="editLedgerModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeEditLedgerModal()">
-    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 26px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
+  <div id="editLedgerModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeEditLedgerModal()">
+    <div class="modal-content"
+      style="max-width: 600px; width: 92%; padding: 26px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 12px; margin-bottom: 16px;">
         <h4 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-ink);">✏️ 장부 내역 수정</h4>
-        <button type="button" onclick="App.closeEditLedgerModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
+        <button type="button" onclick="App.closeEditLedgerModal()"
+          style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--color-mute);">&times;</button>
       </div>
       <form id="editLedgerForm" onsubmit="App.saveEditLedger(event)">
         <input type="hidden" id="editLedgerId" />
@@ -1086,7 +1266,8 @@
             </select>
           </div>
           <div>
-            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">성명 / 찬조자 / 집행 주체 *</label>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">성명 / 찬조자 / 집행 주체
+              *</label>
             <input type="text" id="editLedgerName" class="form-input" required />
           </div>
         </div>
@@ -1108,7 +1289,8 @@
             <input type="date" id="editLedgerDate" class="form-input" required />
           </div>
           <div id="editLedgerLocationBox">
-            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">📍 장소 / 지출처 (선택)</label>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">📍 장소 / 지출처
+              (선택)</label>
             <input type="text" id="editLedgerLocation" class="form-input" placeholder="예: 부산 센텀 명가" />
           </div>
         </div>
@@ -1124,12 +1306,16 @@
         </div>
 
         <div style="margin-bottom: 20px;">
-          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">🧾 영수증 이미지 변경 (선택)</label>
+          <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">🧾 영수증 이미지 변경
+            (선택)</label>
           <div style="display: flex; gap: 10px; align-items: center;">
-            <input type="file" id="editLedgerReceiptFile" class="form-input" accept="image/*" style="padding: 6px 10px;" />
+            <input type="file" id="editLedgerReceiptFile" class="form-input" accept="image/*"
+              style="padding: 6px 10px;" />
             <div id="editLedgerReceiptPreview" style="display: none; align-items: center; gap: 6px;">
               <span style="font-size: 12px; color: #16a34a; font-weight: 700;">기존 영수증 있음</span>
-              <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px; color: #ef4444; border-color: #ef4444;" onclick="App.removeEditLedgerReceipt()">삭제</button>
+              <button type="button" class="btn btn-outline btn-sm"
+                style="padding: 2px 6px; font-size: 11px; color: #ef4444; border-color: #ef4444;"
+                onclick="App.removeEditLedgerReceipt()">삭제</button>
             </div>
           </div>
           <input type="hidden" id="editLedgerExistingReceiptUrl" />
@@ -1143,29 +1329,45 @@
     </div>
   </div>
 
-  <!-- 💡 3. 영수증 이미지 확대 보기 팝업 모달 -->
-  <div id="receiptZoomModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeReceiptZoomModal()">
-    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 20px; border-radius: 12px; text-align: center;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h4 id="receiptZoomTitle" style="font-size: 16px; font-weight: 700; margin: 0; color: var(--color-ink);">🧾 영수증 이미지 확대</h4>
-        <button type="button" onclick="App.closeReceiptZoomModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute);">&times;</button>
+  <!-- 💡 3. 이미지(약도/영수증) 확대 보기 팝업 모달 -->
+  <div id="receiptZoomModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeReceiptZoomModal()">
+    <div class="modal-content"
+      style="max-width: 1060px; width: 95%; padding: 22px; border-radius: 12px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--color-hairline); padding-bottom: 10px;">
+        <h4 id="receiptZoomTitle" style="font-size: 17px; font-weight: 700; margin: 0; color: var(--color-ink);">🧾 이미지
+          확대 보기</h4>
+        <button type="button" onclick="App.closeReceiptZoomModal()"
+          style="background: none; border: none; font-size: 26px; cursor: pointer; color: var(--color-mute); line-height: 1;">&times;</button>
       </div>
-      <img id="receiptZoomImage" src="" alt="영수증 이미지" style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: 8px; border: 1px solid var(--color-hairline);" />
+      <div
+        style="display: flex; justify-content: center; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid var(--color-hairline); padding: 8px;">
+        <img id="receiptZoomImage" src="" alt="확대 이미지"
+          style="width: 100%; max-height: 82vh; object-fit: contain; border-radius: 6px;" />
+      </div>
     </div>
   </div>
 
   <!-- 💡 4. 회비 납부 계좌 안내 팝업 모달 -->
-  <div id="accountInfoModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) App.closeAccountInfoModal()">
-    <div class="modal-content" style="max-width: 460px; width: 90%; padding: 28px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 14px; margin-bottom: 20px;">
-        <h3 style="font-size: 20px; font-weight: 700; margin: 0; color: var(--color-ink); display: flex; align-items: center; gap: 8px;">
+  <div id="accountInfoModal" class="modal-overlay" style="display: none;"
+    onclick="if(event.target === this) App.closeAccountInfoModal()">
+    <div class="modal-content"
+      style="max-width: 460px; width: 90%; padding: 28px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-hairline); padding-bottom: 14px; margin-bottom: 20px;">
+        <h3
+          style="font-size: 20px; font-weight: 700; margin: 0; color: var(--color-ink); display: flex; align-items: center; gap: 8px;">
           💳 13기 정회원 회비 납부 계좌 안내
         </h3>
-        <button type="button" onclick="App.closeAccountInfoModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute); line-height: 1;">&times;</button>
+        <button type="button" onclick="App.closeAccountInfoModal()"
+          style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-mute); line-height: 1;">&times;</button>
       </div>
 
-      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; margin-bottom: 20px; text-align: center;">
-        <div style="font-size: 13px; color: var(--color-mute); margin-bottom: 6px; font-weight: 700;">기업가정신 13기 공식 지정 회비 계좌</div>
+      <div
+        style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 13px; color: var(--color-mute); margin-bottom: 6px; font-weight: 700;">기업가정신 13기 공식 지정 회비
+          계좌</div>
         <div style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 8px; letter-spacing: 0.5px;">
           카카오뱅크 79422963241
         </div>
@@ -1179,7 +1381,8 @@
       </p>
 
       <div style="display: flex; justify-content: center; gap: 10px;">
-        <button type="button" class="btn btn-outline" style="border-color: #6366f1; color: #4f46e5; font-weight: 700;" onclick="App.copyAccountToClipboard()">
+        <button type="button" class="btn btn-outline" style="border-color: #6366f1; color: #4f46e5; font-weight: 700;"
+          onclick="App.copyAccountToClipboard()">
           📋 계좌번호 복사하기
         </button>
         <button type="button" class="btn btn-primary" onclick="App.closeAccountInfoModal()">확인 및 닫기</button>
@@ -1195,11 +1398,11 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
-    import { 
-      getFirestore, collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc 
+    import {
+      getFirestore, collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-    import { 
-      getAuth, GoogleAuthProvider, signInWithPopup, browserPopupRedirectResolver 
+    import {
+      getAuth, GoogleAuthProvider, signInWithPopup, browserPopupRedirectResolver
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
     // Your web app's Firebase configuration (GitHub Secret Scanning 경고 방지 문자열 조합)
