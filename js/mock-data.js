@@ -2,6 +2,24 @@
  * 기업가 정신 13기 웹플랫폼 Mock Data & Database Service
  */
 
+const INDUSTRY_IMAGE_MAP = {
+  "정보통신업": "images/01_information_communication.jpg",
+  "제조업": "images/02_manufacturing.jpg",
+  "도매 및 소매업": "images/03_wholesale_retail.jpg",
+  "전문, 과학 및 기술 서비스업": "images/04_professional_scientific_technical.jpg",
+  "부동산업": "images/05_real_estate.jpg",
+  "건설업": "images/06_construction.jpg",
+  "교육 서비스업": "images/07_education_services.jpg",
+  "보건업 및 사회복지 서비스업": "images/08_health_social_work.jpg",
+  "숙박 및 음식점업": "images/09_accommodation_food.jpg",
+  "금융 및 보험업": "images/10_finance_insurance.jpg",
+  "운수 및 창고업": "images/11_transportation_storage.jpg",
+  "예술, 스포츠 및 여가관련 서비스업": "images/12_arts_sports_recreation.jpg",
+  "사업시설 관리 및 사업지원 서비스업": "images/13_business_facilities_support.jpg",
+  "농업, 임업 및 어업": "images/14_agriculture_forestry_fishing.jpg",
+  "기타 서비스업": "images/15_other_services.jpg"
+};
+
 const INITIAL_MEMBERS = [
   {
     id: "mem-1301",
@@ -10,8 +28,7 @@ const INITIAL_MEMBERS = [
     role: "exec", // 'regular', 'full', 'exec', 'admin'
     company: "넥스트웨이브 솔루션즈",
     industry: "정보통신업",
-    industryIcon: "💻",
-    industryImg: "images/industry_it.jpg",
+    industryImg: "images/01_information_communication.jpg",
     location: "서울 강남구 테헤란로 427",
     summary: "AI 기반 B2B 물류 자동화 SaaS 모듈 개발 및 기업 공급 전문",
     phone: "010-3849-1204",
@@ -28,8 +45,7 @@ const INITIAL_MEMBERS = [
     role: "admin",
     company: "블루바이오 헬스케어",
     industry: "보건업 및 사회복지 서비스업",
-    industryIcon: "🧬",
-    industryImg: "images/industry_bio.jpg",
+    industryImg: "images/08_health_social_work.jpg",
     location: "경기 성남시 분당구 판교역로 166",
     summary: "디지털 헬스케어 진단 기기 및 실시간 유전자 바이오마커 분석 플랫폼",
     phone: "010-9281-5541",
@@ -46,8 +62,7 @@ const INITIAL_MEMBERS = [
     role: "full",
     company: "한성 정밀제조",
     industry: "제조업",
-    industryIcon: "⚙️",
-    industryImg: "images/industry_mfg.jpg",
+    industryImg: "images/02_manufacturing.jpg",
     location: "인천 연수구 송도미래로 30",
     summary: "친환경 초소형 정밀 부품 및 스마트 팩토리 자동화 라인 제작",
     phone: "010-4491-0392",
@@ -64,8 +79,7 @@ const INITIAL_MEMBERS = [
     role: "full",
     company: "에코글로벌 커머스",
     industry: "도매 및 소매업",
-    industryIcon: "🛍️",
-    industryImg: "images/industry_commerce.jpg",
+    industryImg: "images/03_wholesale_retail.jpg",
     location: "서울 마포구 월드컵북로 400",
     summary: "글로벌 친환경 라이프스타일 브랜드 수입 유통 및 자사 몰 운영",
     phone: "010-8832-7104",
@@ -82,8 +96,7 @@ const INITIAL_MEMBERS = [
     role: "exec",
     company: "프론티어 파트너스 변호사 사무소",
     industry: "전문, 과학 및 기술 서비스업",
-    industryIcon: "⚖️",
-    industryImg: "images/industry_consulting.jpg",
+    industryImg: "images/04_professional_scientific_technical.jpg",
     location: "서울 서초구 법원로 15",
     summary: "스타트업 M&A, 투자 유치 계약 및 지식재산권(IP) 특화 법률 자문",
     phone: "010-6620-4419",
@@ -100,8 +113,7 @@ const INITIAL_MEMBERS = [
     role: "full",
     company: "마인드스파크 에듀",
     industry: "교육 서비스업",
-    industryIcon: "🎓",
-    industryImg: "images/industry_education.jpg",
+    industryImg: "images/07_education_services.jpg",
     location: "서울 종로구 율곡로 88",
     summary: "임직원 리더십 역량 강화 프로그램 및 AI 대화형 교육 플랫폼",
     phone: "010-7731-9023",
@@ -118,8 +130,7 @@ const INITIAL_MEMBERS = [
     role: "regular",
     company: "스마트 피트니스 코리아",
     industry: "숙박 및 음식점업",
-    industryIcon: "🍽️",
-    industryImg: "images/industry_service.jpg",
+    industryImg: "images/09_accommodation_food.jpg",
     location: "서울 송파구 올림픽로 300",
     summary: "프리미엄 무인 헬스케어 센터 체인 및 맞춤형 트레이닝 매칭 서비스",
     phone: "010-1129-8834",
@@ -136,8 +147,7 @@ const INITIAL_MEMBERS = [
     role: "regular",
     company: "크리에이티브 스튜디오 지아",
     industry: "예술, 스포츠 및 여가관련 서비스업",
-    industryIcon: "🎨",
-    industryImg: "images/industry_consulting.jpg",
+    industryImg: "images/12_arts_sports_recreation.jpg",
     location: "서울 용산구 이태원로 200",
     summary: "기업 브랜딩 정체성 구축 및 감성적 브랜디드 영상 콘텐츠 제작",
     phone: "010-5510-3391",
@@ -235,6 +245,18 @@ class StorageService {
       if (typeof m.cohort === "string") {
         m.cohort = parseInt(m.cohort.replace(/[^0-9]/g, ""), 10) || 13;
         updated = true;
+      }
+      // 💡 업종 이모지 아이콘 삭제 및 최신 업종 이미지 경로 동기화
+      if ("industryIcon" in m) {
+        delete m.industryIcon;
+        updated = true;
+      }
+      if (m.industry) {
+        const expectedImg = INDUSTRY_IMAGE_MAP[m.industry] || "images/15_other_services.jpg";
+        if (m.industryImg !== expectedImg) {
+          m.industryImg = expectedImg;
+          updated = true;
+        }
       }
       // 💡 초기 13기 납부 회원의 과거 샘플 납부일자(2026-03-XX)를 오늘 날짜로 최신 동기화
       if (m.feePaid && m.feeDate && m.feeDate.startsWith("2026-03-")) {

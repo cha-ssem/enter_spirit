@@ -81,6 +81,11 @@ const App = {
     if (cohortFilter) cohortFilter.addEventListener("change", () => this.renderMemberDirectory());
     if (sortSelect) sortSelect.addEventListener("change", () => this.renderMemberDirectory());
 
+    const profileIndustry = document.getElementById("profileIndustry");
+    if (profileIndustry) {
+      profileIndustry.addEventListener("change", (e) => this.handleProfileIndustryChange(e.target.value));
+    }
+
     const profileForm = document.getElementById("profileForm");
     if (profileForm) {
       profileForm.addEventListener("submit", (e) => {
@@ -184,7 +189,14 @@ const App = {
       const cloudMembers = [];
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        cloudMembers.push({ ...data, id: docSnap.id || data.id });
+        const member = { ...data, id: docSnap.id || data.id };
+        if ("industryIcon" in member) {
+          delete member.industryIcon;
+        }
+        if (member.industry) {
+          member.industryImg = this.getIndustryImage(member.industry);
+        }
+        cloudMembers.push(member);
       });
 
       if (cloudMembers.length > 0) {
@@ -592,8 +604,13 @@ const App = {
         <span class="corner-square"></span>
         <div>
           <div style="display: flex; gap: 14px; margin-bottom: 14px;">
-            <img src="${this.escapeHtml(m.avatarUrl)}" alt="${this.escapeHtml(m.name)}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
-            <div>
+            <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; flex-shrink: 0;">
+              <img src="${this.escapeHtml(m.avatarUrl)}" alt="${this.escapeHtml(m.name)}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
+              ${m.industry ? `
+                <img src="${this.escapeHtml(this.getIndustryImage(m.industry))}" alt="${this.escapeHtml(m.industry)}" title="${this.escapeHtml(m.industry)}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline); background: #ffffff;" />
+              ` : ''}
+            </div>
+            <div style="flex: 1; min-width: 0;">
               <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                 <span style="font-size: 18px; font-weight: 700; line-height: 1;">${this.escapeHtml(m.name)}</span>
                 <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff; height: 22px; padding: 0 8px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${m.cohort}기</span>
@@ -604,10 +621,10 @@ const App = {
                   </a>
                 ` : ''}
               </div>
-              ${m.company ? `<div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 2px;">${this.escapeHtml(m.company)}</div>` : ''}
+              ${m.company ? `<div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 4px;">${this.escapeHtml(m.company)}</div>` : ''}
               ${m.industry ? `
-                <div style="font-size: 12.5px; margin-top: 2px; color: var(--color-mute);">
-                  ${this.escapeHtml(m.industryIcon || '')} ${this.escapeHtml(m.industry)}
+                <div style="font-size: 12.5px; margin-top: 4px; color: var(--color-mute);">
+                  ${this.escapeHtml(m.industry)}
                 </div>
               ` : ''}
             </div>
@@ -979,7 +996,7 @@ const App = {
       role: "regular",
       company: "",
       industry: "",
-      industryIcon: "",
+      industryImg: "",
       location: "",
       phone: googleUser && googleUser.phoneNumber ? googleUser.phoneNumber : "",
       kakaoId: googleEmail ? googleEmail.split("@")[0] : "",
@@ -1051,7 +1068,7 @@ const App = {
       role: "regular", // 회원가입 완료 시 기본 일반회원 등급 승인
       company,
       industry,
-      industryIcon: (this.getIndustryMetadata(industry) || { icon: "💻" }).icon,
+      industryImg: this.getIndustryImage(industry),
       location: location || "",
       phone,
       kakaoId,
@@ -1223,7 +1240,14 @@ const App = {
     const profileCohortEl = document.getElementById("profileCohort");
     if (profileCohortEl) profileCohortEl.value = user.cohort || 13;
 
-    document.getElementById("profileIndustry").value = user.industry || "정보통신업";
+    const profileIndustryEl = document.getElementById("profileIndustry");
+    if (profileIndustryEl) {
+      profileIndustryEl.value = user.industry || "정보통신업";
+    }
+    const profileIndustryPreview = document.getElementById("profileIndustryPreviewImg");
+    if (profileIndustryPreview) {
+      profileIndustryPreview.src = this.getIndustryImage(user.industry || "정보통신업");
+    }
     document.getElementById("profileLocation").value = user.location || "";
     document.getElementById("profilePhone").value = user.phone || "";
     document.getElementById("profileKakao").value = user.kakaoId || "";
@@ -1236,6 +1260,16 @@ const App = {
     const sidebarAvatarImg = document.getElementById("sidebarAvatarImg");
     if (sidebarAvatarImg && user.avatarUrl) {
       sidebarAvatarImg.src = user.avatarUrl;
+    }
+
+    const sidebarIndustryImg = document.getElementById("sidebarIndustryImg");
+    if (sidebarIndustryImg) {
+      sidebarIndustryImg.src = this.getIndustryImage(user.industry || "정보통신업");
+      sidebarIndustryImg.title = user.industry || "업종 분류";
+    }
+    const sidebarIndustryLabel = document.getElementById("sidebarIndustryLabel");
+    if (sidebarIndustryLabel) {
+      sidebarIndustryLabel.textContent = user.industry || "업종 분류";
     }
 
     const sidebarName = document.getElementById("sidebarMemberName");
@@ -1260,6 +1294,58 @@ const App = {
     }
   },
 
+  getIndustryImage(industry) {
+    if (!industry) return "images/01_information_communication.jpg";
+    const key = industry.trim();
+    if (typeof INDUSTRY_IMAGE_MAP !== "undefined" && INDUSTRY_IMAGE_MAP[key]) {
+      return INDUSTRY_IMAGE_MAP[key];
+    }
+    return "images/15_other_services.jpg";
+  },
+
+  handleProfileIndustryChange(selectedIndustry) {
+    const industryImgPath = this.getIndustryImage(selectedIndustry);
+    const profileIndustryPreview = document.getElementById("profileIndustryPreviewImg");
+    if (profileIndustryPreview) {
+      profileIndustryPreview.src = industryImgPath;
+    }
+
+    const sidebarIndustryImg = document.getElementById("sidebarIndustryImg");
+    if (sidebarIndustryImg) {
+      sidebarIndustryImg.src = industryImgPath;
+      sidebarIndustryImg.title = selectedIndustry;
+    }
+    const sidebarIndustryLabel = document.getElementById("sidebarIndustryLabel");
+    if (sidebarIndustryLabel) {
+      sidebarIndustryLabel.textContent = selectedIndustry;
+    }
+
+    // 💡 My Page에서 업종 분류를 선택하면 선택한 업종의 이미지가 회원 정보에 자동 저장됨
+    let userIndex = this.members.findIndex(m => m.id === this.currentUserId);
+    if (userIndex === -1) {
+      userIndex = 0;
+      this.currentUserId = this.members[0] ? this.members[0].id : "mem-1301";
+    }
+
+    if (this.members[userIndex]) {
+      this.members[userIndex].industry = selectedIndustry;
+      this.members[userIndex].industryImg = industryImgPath;
+      delete this.members[userIndex].industryIcon;
+
+      StorageService.saveMembers(this.members);
+
+      if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+        window.FS.setDoc(window.FS.doc(window.db, "members", this.members[userIndex].id), {
+          industry: selectedIndustry,
+          industryImg: industryImgPath
+        }, { merge: true }).catch(console.warn);
+      }
+
+      this.showToast(`🏢 업종이 '${selectedIndustry}'(으)로 변경 및 자동 저장되었습니다.`);
+      this.renderMemberDirectory();
+    }
+  },
+
   async saveProfile() {
     let userIndex = this.members.findIndex(m => m.id === this.currentUserId);
     if (userIndex === -1) {
@@ -1269,7 +1355,7 @@ const App = {
 
     const selectedIndustry = document.getElementById("profileIndustry").value;
     const selectedCohort = parseInt(document.getElementById("profileCohort").value, 10) || 13;
-    const meta = this.getIndustryMeta ? this.getIndustryMeta(selectedIndustry) : { icon: "💻" };
+    const industryImgPath = this.getIndustryImage(selectedIndustry);
     const pageURLVal = document.getElementById("profilePageURL") ? document.getElementById("profilePageURL").value.trim() : "";
     const PemailVal = document.getElementById("profilePemail") ? document.getElementById("profilePemail").value.trim() : "";
 
@@ -1279,7 +1365,7 @@ const App = {
       company: document.getElementById("profileCompany").value.trim(),
       cohort: selectedCohort,
       industry: selectedIndustry,
-      industryIcon: meta.icon,
+      industryImg: industryImgPath,
       location: document.getElementById("profileLocation").value.trim(),
       phone: document.getElementById("profilePhone").value.trim(),
       kakaoId: document.getElementById("profileKakao").value.trim(),
@@ -1287,6 +1373,7 @@ const App = {
       Pemail: PemailVal, // 💡 개인 이메일(Pemail) 저장
       summary: document.getElementById("profileSummary").value.trim()
     };
+    delete updatedUser.industryIcon;
 
     if (this.tempAvatarUrl) {
       updatedUser.avatarUrl = this.tempAvatarUrl;
@@ -1911,7 +1998,7 @@ const App = {
       kakaoId: primary.kakaoId || secondary.kakaoId || "",
       company: primary.company || secondary.company || "",
       industry: primary.industry || secondary.industry || "",
-      industryIcon: primary.industryIcon || secondary.industryIcon || "",
+      industryImg: primary.industryImg || secondary.industryImg || this.getIndustryImage(primary.industry || secondary.industry || ""),
       location: primary.location || secondary.location || "",
       pageURL: primary.pageURL || secondary.pageURL || "",
       summary: primary.summary || secondary.summary || "",
