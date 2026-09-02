@@ -251,8 +251,8 @@
         </div>
       </div>
 
-      <!-- Member Grid Container -->
-      <div id="memberGridContainer" class="nvidia-card-grid">
+      <!-- Member Grid Container (1줄에 5개씩 5열 그리드) -->
+      <div id="memberGridContainer" class="member-grid-5col">
         <!-- Rendered dynamically -->
       </div>
     </section>
@@ -342,20 +342,14 @@
         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
         <div class="product-card" style="text-align: center;">
           <span class="corner-square"></span>
-          <!-- 💡 프로필 사진(확대) & 오른쪽에 회원 정보에 저장된 업종 분류 이미지 표시 -->
-          <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap;">
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <img id="sidebarAvatarImg"
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="프로필 사진"
-                style="width: 120px; height: 120px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
-              <span style="font-size: 11.5px; color: var(--color-mute); margin-top: 4px; font-weight: 600;">원우 프로필</span>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <img id="sidebarIndustryImg"
-                src="images/01_information_communication.jpg" alt="업종 분류 이미지" title="등록 업종"
-                style="width: 120px; height: 120px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline); background: #ffffff;" />
-              <span id="sidebarIndustryLabel" style="font-size: 11.5px; color: var(--color-mute); margin-top: 4px; font-weight: 600;">업종 분류</span>
-            </div>
+          <!-- 💡 프로필 사진 & 업종 이미지 2열 배치 ('사진 업로드 / 변경' 단추 너비와 100% 일치) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 12px; box-sizing: border-box;">
+            <img id="sidebarAvatarImg"
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="프로필 사진"
+              style="width: 100%; aspect-ratio: 1 / 1; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
+            <img id="sidebarIndustryImg"
+              src="images/01_information_communication.jpg" alt="업종 분류 이미지" title="등록 업종"
+              style="width: 100%; aspect-ratio: 1 / 1; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline); background: #ffffff;" />
           </div>
 
           <div style="margin-bottom: 12px;">

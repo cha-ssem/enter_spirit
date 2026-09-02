@@ -600,43 +600,48 @@ const App = {
     }
 
     container.innerHTML = filtered.map(m => `
-      <div class="product-card">
+      <div class="product-card" style="padding: 18px 14px;">
         <span class="corner-square"></span>
         <div>
-          <div style="display: flex; gap: 14px; margin-bottom: 14px;">
-            <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; flex-shrink: 0;">
-              <img src="${this.escapeHtml(m.avatarUrl)}" alt="${this.escapeHtml(m.name)}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
+          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: center; flex-shrink: 0;">
+              <img src="${this.escapeHtml(m.avatarUrl)}" alt="${this.escapeHtml(m.name)}" style="width: 52px; height: 52px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline);" />
               ${m.industry ? `
-                <img src="${this.escapeHtml(this.getIndustryImage(m.industry))}" alt="${this.escapeHtml(m.industry)}" title="${this.escapeHtml(m.industry)}" style="width: 54px; height: 54px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline); background: #ffffff;" />
+                <img src="${this.escapeHtml(this.getIndustryImage(m.industry))}" alt="${this.escapeHtml(m.industry)}" title="${this.escapeHtml(m.industry)}" style="width: 52px; height: 52px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--color-hairline); background: #ffffff;" />
               ` : ''}
             </div>
             <div style="flex: 1; min-width: 0;">
-              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span style="font-size: 18px; font-weight: 700; line-height: 1;">${this.escapeHtml(m.name)}</span>
-                <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff; height: 22px; padding: 0 8px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${m.cohort}기</span>
-                <span class="pill-tag-nvidia" style="background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 22px; padding: 0 8px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${this.getRoleName(m.role)}</span>
+              <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                <span style="font-size: 17px; font-weight: 700; line-height: 1.1;">${this.escapeHtml(m.name)}</span>
+                <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff; height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${m.cohort}기</span>
+                <span class="pill-tag-nvidia" style="background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${this.getRoleName(m.role)}</span>
+              </div>
+
+              <!-- 💡 회사명 오른쪽에 '홈페이지 방문 →' 단추 배치 -->
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 5px;">
+                ${m.company ? `<span style="font-size: 13.5px; font-weight: 700; color: var(--color-ink); word-break: keep-all;">${this.escapeHtml(m.company)}</span>` : ''}
                 ${m.pageURL && m.pageURL.trim() !== '' ? `
-                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 22px; min-height: 22px; padding: 0 9px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; border-radius: 4px; box-sizing: border-box; line-height: 1;">
+                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 20px; min-height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; border-radius: 4px; box-sizing: border-box; line-height: 1; white-space: nowrap;">
                     🌐 홈페이지 방문 →
                   </a>
                 ` : ''}
               </div>
-              ${m.company ? `<div style="font-size: 14px; font-weight: 700; color: var(--color-ink); margin-top: 4px;">${this.escapeHtml(m.company)}</div>` : ''}
+
               ${m.industry ? `
-                <div style="font-size: 12.5px; margin-top: 4px; color: var(--color-mute);">
+                <div style="font-size: 12px; margin-top: 4px; color: var(--color-mute); line-height: 1.3;">
                   ${this.escapeHtml(m.industry)}
                 </div>
               ` : ''}
             </div>
           </div>
-          ${m.summary ? `<p style="font-size: 14.5px; color: var(--color-body); margin: 12px 0; line-height: 1.5;">${this.escapeHtml(m.summary)}</p>` : ''}
+          ${m.summary ? `<p style="font-size: 13.5px; color: var(--color-body); margin: 10px 0; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${this.escapeHtml(m.summary)}</p>` : ''}
         </div>
 
-        <div style="border-top: 1px solid var(--color-hairline); padding-top: 12px; font-size: 13.5px; color: var(--color-mute); display: flex; flex-direction: column; gap: 4px;">
-          ${m.location ? `<div>📍 ${this.escapeHtml(m.location)}</div>` : ''}
+        <div style="border-top: 1px solid var(--color-hairline); padding-top: 10px; font-size: 12.5px; color: var(--color-mute); display: flex; flex-direction: column; gap: 3px;">
+          ${m.location ? `<div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${this.escapeHtml(m.location)}">📍 ${this.escapeHtml(m.location)}</div>` : ''}
           ${m.phone ? `<div>📞 ${this.escapeHtml(this.maskPhone(m.phone))} ${this.currentRole === 'guest' ? '<span style="font-size: 11px; color: #94a3b8;">(로그인 시 공개)</span>' : ''}</div>` : ''}
           ${m.kakaoId ? `<div>💬 카톡: <strong style="color: var(--color-ink);">${this.escapeHtml(this.maskKakao(m.kakaoId))}</strong></div>` : ''}
-          ${(m.Pemail || m.googleEmail) ? `<div>📧 이메일: <strong style="color: var(--color-ink);">${this.escapeHtml(this.maskEmail(m.Pemail || m.googleEmail))}</strong></div>` : ''}
+          ${(m.Pemail || m.googleEmail) ? `<div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${this.escapeHtml(m.Pemail || m.googleEmail)}">📧 <strong style="color: var(--color-ink);">${this.escapeHtml(this.maskEmail(m.Pemail || m.googleEmail))}</strong></div>` : ''}
         </div>
       </div>
     `).join("");
@@ -1267,10 +1272,6 @@ const App = {
       sidebarIndustryImg.src = this.getIndustryImage(user.industry || "정보통신업");
       sidebarIndustryImg.title = user.industry || "업종 분류";
     }
-    const sidebarIndustryLabel = document.getElementById("sidebarIndustryLabel");
-    if (sidebarIndustryLabel) {
-      sidebarIndustryLabel.textContent = user.industry || "업종 분류";
-    }
 
     const sidebarName = document.getElementById("sidebarMemberName");
     const sidebarRole = document.getElementById("sidebarMemberRole");
@@ -1314,10 +1315,6 @@ const App = {
     if (sidebarIndustryImg) {
       sidebarIndustryImg.src = industryImgPath;
       sidebarIndustryImg.title = selectedIndustry;
-    }
-    const sidebarIndustryLabel = document.getElementById("sidebarIndustryLabel");
-    if (sidebarIndustryLabel) {
-      sidebarIndustryLabel.textContent = selectedIndustry;
     }
 
     // 💡 My Page에서 업종 분류를 선택하면 선택한 업종의 이미지가 회원 정보에 자동 저장됨
