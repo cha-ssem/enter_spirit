@@ -1547,6 +1547,7 @@ const App = {
     member.feeDate = newDate;
     StorageService.saveMembers(this.members);
 
+    // 1) Firestore members 컬렉션 갱신
     if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
       try {
         await window.FS.setDoc(window.FS.doc(window.db, "members", memberId), {
@@ -1555,6 +1556,31 @@ const App = {
       } catch (err) {
         console.warn("Firestore 회비 납부일자 갱신 오류:", err);
       }
+    }
+
+    // 2) 💡 회계 장부(ledger)에 이미 기록된 해당 회원의 회비 항목 일자도 함께 동기화
+    let ledgerUpdated = false;
+    const ledgerSyncPromises = [];
+    this.ledger.forEach(item => {
+      if (item.type === "fee" && item.name && item.name.trim() === member.name.trim()) {
+        item.date = newDate;
+        ledgerUpdated = true;
+        if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+          ledgerSyncPromises.push(
+            window.FS.setDoc(window.FS.doc(window.db, "ledger", item.id), {
+              date: newDate
+            }, { merge: true }).catch(console.warn)
+          );
+        }
+      }
+    });
+
+    if (ledgerUpdated) {
+      StorageService.saveLedger(this.ledger);
+      if (ledgerSyncPromises.length > 0) {
+        Promise.all(ledgerSyncPromises).catch(console.warn);
+      }
+      this.renderLedger();
     }
 
     this.showToast(`📅 ${member.name} 원우의 회비 납부일자가 '${newDate}'(으)로 설정되었습니다.`);
