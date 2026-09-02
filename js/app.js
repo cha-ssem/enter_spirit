@@ -1151,15 +1151,24 @@ const App = {
     const lec = this.lectures.find(l => l.week === week);
     if (!lec) return;
 
-    const spkUrl = lec.speakerURL ? lec.speakerURL.trim() : "";
+    const spkUrl = (lec.speakerURL || lec.speakerUrl || "").trim();
+    const speakerStr = lec.speakerBio ? `${lec.speaker} (${lec.speakerBio})` : lec.speaker;
 
-    let shareText = `━━━━━━━━━━━━━━━━━━━━\n📢 [기업가정신 포럼 13기]\n   ${lec.week}주차 정기 강연 안내\n━━━━━━━━━━━━━━━━━━━━\n\n📌 [강의 주제]\n   ${lec.title}\n\n🗓️ [일시] ${lec.date}\n📍 [장소] ${lec.location}\n🎙️ [강사] ${lec.speaker} (${lec.speakerBio})\n`;
+    let shareText = `━━━━━━━━━━━━━━━━━━━━\n` +
+      `📢 [기업가정신 포럼 13기]\n` +
+      `   ${lec.week}주차 정기 강연 안내\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `📌 [강의 주제]\n` +
+      `   ${lec.title}\n\n` +
+      `🗓️ [일시] ${lec.date}\n` +
+      `📍 [장소] ${lec.location}\n` +
+      `🎙️ [강사] ${speakerStr}\n`;
 
     if (spkUrl) {
       shareText += `🔗 [강사 소속 및 활동사항]\n   ${spkUrl}\n`;
     }
 
-    shareText += `\n────────────────────\n✨ 13기 원우님의 많은 참석을 바랍니다!`;
+    shareText += `────────────────────\n✨ 13기 원우님의 많은 참석을 바랍니다!`;
 
     navigator.clipboard.writeText(shareText).then(() => {
       this.showToast(`🎉 ${week}주차 카카오톡 공유 포맷이 복사되었습니다! 단톡방에 바로 붙여넣어 공유하세요.`);

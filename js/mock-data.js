@@ -152,12 +152,13 @@ const INITIAL_MEMBERS = [
 const INITIAL_LECTURES = [
   {
     week: 1,
-    title: "13기 오리엔테이션 및 불확실성 시대의 기업가 정신",
-    date: "2026-09-03 (목) 19:00",
-    location: "본관 4층 프레스티지홀",
-    speaker: "한동훈 교수",
-    speakerBio: "전 글로벌 벤처캐피탈 파트너 / 현 경영대학원 주임교수",
-    description: "글로벌 경영 환경 변화 속에서 혁신적 리더십 구축과 13기 네트워킹 가이드라인 공유",
+    title: "지속 성장을 위한 혁신 리더십",
+    date: "2026-09-05 (토) 13:30",
+    location: "산학협력관 7층 동의시네마홀",
+    speaker: "이금룡 이사장",
+    speakerBio: "(사)도전과나눔",
+    speakerURL: "https://www.dona.kr/",
+    description: "불확실한 비즈니스 환경에서 지속 가능한 기업 성장을 실현하는 혁신 기업가 정신과 통찰력 있는 리더십 전략",
     materialUrl: "lecture_w01_intro.pdf",
     photos: [
       "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=300&q=80",
@@ -263,7 +264,19 @@ class StorageService {
       localStorage.setItem("enterprise_13th_lectures", JSON.stringify(INITIAL_LECTURES));
       return INITIAL_LECTURES;
     }
-    return JSON.parse(data);
+    let parsed = JSON.parse(data);
+    // 💡 1주차 강연 정보 최신 동기화 (지속 성장을 위한 혁신 리더십 / 이금룡 이사장)
+    const w1 = parsed.find(l => l.week === 1);
+    if (w1 && (w1.speaker !== "이금룡 이사장" || !w1.speakerURL)) {
+      w1.title = "지속 성장을 위한 혁신 리더십";
+      w1.date = "2026-09-05 (토) 13:30";
+      w1.location = "산학협력관 7층 동의시네마홀";
+      w1.speaker = "이금룡 이사장";
+      w1.speakerBio = "(사)도전과나눔";
+      w1.speakerURL = "https://www.dona.kr/";
+      localStorage.setItem("enterprise_13th_lectures", JSON.stringify(parsed));
+    }
+    return parsed;
   }
 
   static saveLectures(lectures) {
