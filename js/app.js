@@ -204,6 +204,15 @@ const App = {
         } else {
           this.updateRoleUI();
         }
+
+        // 💡 현재 활성화된 탭이 Overview(home)인 경우 최신 회원 통계 즉시 갱신
+        if (this.currentTab === "home") {
+          this.renderHome();
+        } else if (this.currentTab === "members") {
+          this.renderMemberDirectory();
+        } else if (this.currentTab === "admin") {
+          this.renderAdmin();
+        }
       }
     } catch (err) {
       console.warn("Firestore 회원 데이터 로딩 시도 중 예외:", err);
@@ -482,6 +491,8 @@ const App = {
   },
 
   renderHome() {
+    // 💡 Overview 페이지에 접속할 때마다 로컬 스토리지의 최신 회원 정보 즉시 반영
+    this.members = StorageService.getMembers();
     const totalMembers = this.members.length;
     const paidMembers = this.members.filter(m => m.feePaid).length;
     // 💡 강의 날짜 당일 오후 6시(18:00) 경과 시 다음 주차 강의 자동 실시간 전환
@@ -500,7 +511,7 @@ const App = {
         </div>
         <div>
           <div class="stat-num-nvidia">${paidMembers}명</div>
-          <div class="stat-label-nvidia">FEE PAID</div>
+          <div class="stat-label-nvidia">FULL MEMBERSHIP</div>
         </div>
       `;
     }
@@ -514,6 +525,11 @@ const App = {
         <div style="font-size: 14.5px; font-weight: 700; color: #ffffff; margin-bottom: 3px;">🎙️ 강사 : ${upcomingLecture.speaker}</div>
         <div style="font-size: 13px; color: var(--color-on-dark-mute); line-height: 1.4;">${upcomingLecture.speakerBio}</div>
       `;
+    }
+
+    // 💡 Overview 페이지에 접속할 때마다 클라우드 DB의 최신 회원수를 비동기 조회하여 실시간 갱신
+    if (typeof this.fetchCloudMembers === "function") {
+      this.fetchCloudMembers();
     }
   },
 
