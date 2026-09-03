@@ -231,12 +231,14 @@ h4 {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  height: calc(62px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--color-surface-dark);
   border-top: 1px solid var(--color-hairline-strong);
-  z-index: 1000;
+  z-index: 9990;
   justify-content: space-around;
   align-items: center;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.45);
 }
 
 .mobile-nav-btn {
@@ -253,7 +255,12 @@ h4 {
   border: none;
   flex: 1;
   height: 100%;
+  min-height: 48px;
+  padding: 6px 0;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .mobile-nav-btn.active {
@@ -651,12 +658,13 @@ h4 {
   border-left: 4px solid var(--color-primary);
   font-size: 14px;
   font-weight: 700;
-  z-index: 3000;
+  z-index: 10001;
   display: flex;
   align-items: center;
   gap: 8px;
   transform: translateY(100px);
   opacity: 0;
+  pointer-events: none;
   transition: all 0.2s ease;
 }
 
@@ -734,10 +742,18 @@ button, input, select, textarea, a, .btn {
 
 @media (max-width: 768px) {
   body {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  .toast {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    right: 16px;
+    max-width: calc(100% - 32px);
+    justify-content: center;
+    text-align: center;
   }
   .modal-overlay {
-    z-index: 9999; /* 모바일 하단 네비게이션 바보다 높은 최상위 터치 레이어 */
+    z-index: 10000; /* 모바일 하단 네비게이션 바(9990)보다 높은 최상위 터치 레이어 */
     padding: 16px;
     align-items: flex-end;
   }

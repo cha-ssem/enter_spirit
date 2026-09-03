@@ -56,23 +56,23 @@
 
   <!-- Mobile Bottom Navigation (2px CAD) -->
   <nav class="mobile-bottom-nav">
-    <button class="mobile-nav-btn active" data-tab="home">
+    <button class="mobile-nav-btn active" data-tab="home" onclick="App.switchTab('home')">
       <span style="font-size: 16px;">🏠</span>
       <span>Overview</span>
     </button>
-    <button class="mobile-nav-btn" data-tab="members">
+    <button class="mobile-nav-btn" data-tab="members" onclick="App.switchTab('members')">
       <span style="font-size: 16px;">👥</span>
       <span>Members</span>
     </button>
-    <button class="mobile-nav-btn" data-tab="schedule">
+    <button class="mobile-nav-btn" data-tab="schedule" onclick="App.switchTab('schedule')">
       <span style="font-size: 16px;">📅</span>
       <span>Schedule</span>
     </button>
-    <button class="mobile-nav-btn" data-tab="profile">
+    <button class="mobile-nav-btn" data-tab="profile" onclick="App.switchTab('profile')">
       <span style="font-size: 16px;">👤</span>
       <span>Profile</span>
     </button>
-    <button class="mobile-nav-btn" data-tab="admin" id="mobileNavAdminBtn">
+    <button class="mobile-nav-btn" data-tab="admin" id="mobileNavAdminBtn" onclick="App.switchTab('admin')">
       <span style="font-size: 16px;">⚙️</span>
       <span>Admin</span>
     </button>
