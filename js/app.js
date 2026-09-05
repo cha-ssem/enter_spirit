@@ -640,9 +640,11 @@ const App = {
             </div>
             <div style="flex: 1; min-width: 0;">
               <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-                <span style="font-size: 17px; font-weight: 700; line-height: 1.1;">${this.escapeHtml(m.name)}</span>
-                <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff; height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${m.cohort}기</span>
-                <span class="pill-tag-nvidia" style="background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${this.getRoleName(m.role)}</span>
+                <span style="font-size: 16.5px; font-weight: 700; line-height: 1.1; white-space: nowrap;">${this.escapeHtml(m.name)}</span>
+                <div style="display: inline-flex; align-items: center; gap: 3.5px; flex-shrink: 0;">
+                  <span class="pill-tag-nvidia" style="background: var(--color-surface-dark); color: #fff; height: 18px; padding: 0 5px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; border-radius: 3px;">${m.cohort}기</span>
+                  <span class="pill-tag-nvidia" style="background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 18px; padding: 0 5px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; border-radius: 3px;">${this.getRoleName(m.role)}</span>
+                </div>
               </div>
 
               <!-- 💡 회사명 + 직책 + '홈페이지 방문 →' 단추 배치 -->
