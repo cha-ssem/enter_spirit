@@ -990,8 +990,8 @@ const App = {
     const mapUrl = document.getElementById("addEventMapUrl").value.trim();
     const description = document.getElementById("addEventDescription").value.trim();
 
-    if (!title || !date || !location || !mapUrl) {
-      this.showToast("⚠️ 필수 정보(행사명, 일시, 장소, 네이버 지도 링크)를 모두 입력해 주세요.");
+    if (!title || !date || !location) {
+      this.showToast("⚠️ 필수 정보(행사명, 일시, 장소)를 모두 입력해 주세요.");
       return;
     }
 
@@ -1073,8 +1073,8 @@ const App = {
     const mapUrl = document.getElementById("editEventMapUrl").value.trim();
     const description = document.getElementById("editEventDescription").value.trim();
 
-    if (!title || !date || !location || !mapUrl) {
-      this.showToast("⚠️ 필수 정보를 모두 입력해 주세요.");
+    if (!title || !date || !location) {
+      this.showToast("⚠️ 필수 정보(행사명, 일시, 장소)를 모두 입력해 주세요.");
       return;
     }
 
