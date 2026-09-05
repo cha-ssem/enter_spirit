@@ -647,13 +647,13 @@ const App = {
                 </div>
               </div>
 
-              <!-- 💡 회사명 + 직책 + '홈페이지 방문 →' 단추 배치 -->
-              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 5px;">
-                ${m.company ? `<span style="font-size: 13.5px; font-weight: 700; color: var(--color-ink); word-break: keep-all;">${this.escapeHtml(m.company)}</span>` : ''}
-                ${m.position && m.position.trim() !== '' ? `<span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 20px; padding: 0 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600;">${this.escapeHtml(m.position)}</span>` : ''}
+              <!-- 💡 회사명 + 직책 + 홈페이지 단추 (1줄 배치) -->
+              <div style="display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; margin-top: 4px; min-width: 0;">
+                ${m.company ? `<span style="font-size: 13px; font-weight: 700; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(m.company)}">${this.escapeHtml(m.company)}</span>` : ''}
+                ${m.position && m.position.trim() !== '' ? `<span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 18px; padding: 0 4px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600; white-space: nowrap; flex-shrink: 0;">${this.escapeHtml(m.position)}</span>` : ''}
                 ${m.pageURL && m.pageURL.trim() !== '' ? `
-                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 20px; min-height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; border-radius: 4px; box-sizing: border-box; line-height: 1; white-space: nowrap;">
-                    🌐 홈페이지 방문 →
+                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 18px; min-height: 18px; padding: 0 5px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; border-radius: 3px; box-sizing: border-box; line-height: 1; white-space: nowrap; flex-shrink: 0;" title="회사 홈페이지 새 창 열기">
+                    🌐 홈페이지
                   </a>
                 ` : ''}
               </div>
