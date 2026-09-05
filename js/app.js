@@ -664,15 +664,19 @@ const App = {
                 </div>
               ` : ''}
 
-              <!-- 💡 4줄 : 업종 + 직책배지 -->
-              <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 4px;">
-                ${m.industry ? `
-                  <span style="font-size: 11.5px; color: var(--color-mute); line-height: 1.3;">
-                    ${this.escapeHtml(m.industry)}
-                  </span>
-                ` : ''}
-                ${m.position && m.position.trim() !== '' ? `<span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 18px; padding: 0 5px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600; white-space: nowrap;">${this.escapeHtml(m.position)}</span>` : ''}
-              </div>
+              <!-- 💡 4줄 : 업종 -->
+              ${m.industry ? `
+                <div style="margin-top: 4px; font-size: 11.5px; color: var(--color-mute); line-height: 1.3;">
+                  ${this.escapeHtml(m.industry)}
+                </div>
+              ` : ''}
+
+              <!-- 💡 5줄 : 직책 배지 -->
+              ${m.position && m.position.trim() !== '' ? `
+                <div style="margin-top: 4px;">
+                  <span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 18px; padding: 0 5px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600; white-space: nowrap;">${this.escapeHtml(m.position)}</span>
+                </div>
+              ` : ''}
             </div>
           </div>
           ${m.summary ? `<p style="font-size: 13.5px; color: var(--color-body); margin: 10px 0; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${this.escapeHtml(m.summary)}</p>` : ''}
