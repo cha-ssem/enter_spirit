@@ -852,7 +852,7 @@ const App = {
                 </button>
                 ${isExecOrAdmin ? `
                   <button class="btn btn-outline btn-sm" style="padding: 8px 14px; font-size: 12px; font-weight: 700; width: 100%; max-width: 210px; justify-content: center; border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1);" onclick="App.shareEventSurveyToKakao('${ev.id}')" title="카카오톡 단톡방 참석 여부 투표 및 설문조사용 공지문구를 복사합니다">
-                    📋 카톡 설문/투표 문구 복사 (관리자)
+                    📋 카톡 설문/투표 문구 복사
                   </button>
                 ` : ''}
                 ${ev.mapUrl && ev.mapUrl.trim() !== '' ? `
