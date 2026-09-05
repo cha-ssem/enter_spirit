@@ -260,6 +260,11 @@ class StorageService {
           updated = true;
         }
       }
+      // 💡 직책(position) 필드가 없는 기존 회원의 경우 기본값 빈칸("") 부여
+      if (typeof m.position === "undefined") {
+        m.position = "";
+        updated = true;
+      }
       // 💡 초기 13기 납부 회원의 과거 샘플 납부일자(2026-03-XX)를 오늘 날짜로 최신 동기화
       if (m.feePaid && m.feeDate && m.feeDate.startsWith("2026-03-")) {
         m.feeDate = todayStr;
@@ -273,10 +278,13 @@ class StorageService {
   }
 
   static saveMembers(members) {
-    // cohort를 항상 정수 숫자로 보장
+    // cohort를 항상 정수 숫자로 보장 및 position 필드 보장
     members.forEach(m => {
       if (typeof m.cohort === "string") {
         m.cohort = parseInt(m.cohort.replace(/[^0-9]/g, ""), 10) || 13;
+      }
+      if (typeof m.position === "undefined") {
+        m.position = "";
       }
     });
     localStorage.setItem("enterprise_13th_members", JSON.stringify(members));

@@ -403,12 +403,17 @@
           <span class="corner-square"></span>
           <form id="profileForm">
             <div
-              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 16px;">
               <div>
                 <label
                   style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">성명
                   (이름)</label>
                 <input type="text" id="profileName" class="form-input" required />
+              </div>
+              <div>
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">직책 (직위)</label>
+                <input type="text" id="profilePosition" class="form-input" placeholder="예: 대표, 이사, 팀장" />
               </div>
               <div>
                 <label
@@ -1225,9 +1230,16 @@
             </div>
             <div>
               <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">업종
-                분류 (KSIC 기준) *</label>
-              <select id="regIndustry" class="form-input" required>
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">직책 (직위)</label>
+              <input type="text" id="regPosition" class="form-input" placeholder="예: 대표, 이사, 팀장" />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <label
+              style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 4px;">업종
+              분류 (KSIC 기준) *</label>
+            <select id="regIndustry" class="form-input" required>
                 <option value="정보통신업">정보통신업 (IT·소프트웨어·SaaS)</option>
                 <option value="제조업">제조업 (전자·기계·장비·식료품)</option>
                 <option value="도매 및 소매업">도매 및 소매업 (유통·무역·이커머스)</option>

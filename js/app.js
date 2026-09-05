@@ -606,7 +606,9 @@ const App = {
     const sortVal = document.getElementById("sortSelect")?.value || "name";
 
     let filtered = this.members.filter(m => {
-      const matchSearch = m.name.toLowerCase().includes(searchVal) || m.company.toLowerCase().includes(searchVal);
+      const matchSearch = m.name.toLowerCase().includes(searchVal) || 
+                          (m.company && m.company.toLowerCase().includes(searchVal)) ||
+                          (m.position && m.position.toLowerCase().includes(searchVal));
       const matchIndustry = industryVal === "all" || m.industry === industryVal;
       const matchCohort = cohortVal === "all" || String(m.cohort) === String(cohortVal);
       return matchSearch && matchIndustry && matchCohort;
@@ -614,7 +616,7 @@ const App = {
 
     filtered.sort((a, b) => {
       if (sortVal === "name") return a.name.localeCompare(b.name, "ko");
-      if (sortVal === "company") return a.company.localeCompare(b.company, "ko");
+      if (sortVal === "company") return (a.company || "").localeCompare(b.company || "", "ko");
       if (sortVal === "cohort") return b.cohort - a.cohort;
       if (sortVal === "joinDate") return new Date(b.joinDate) - new Date(a.joinDate);
       return 0;
@@ -643,9 +645,10 @@ const App = {
                 <span class="pill-tag-nvidia" style="background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">${this.getRoleName(m.role)}</span>
               </div>
 
-              <!-- 💡 회사명 오른쪽에 '홈페이지 방문 →' 단추 배치 -->
+              <!-- 💡 회사명 + 직책 + '홈페이지 방문 →' 단추 배치 -->
               <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 5px;">
                 ${m.company ? `<span style="font-size: 13.5px; font-weight: 700; color: var(--color-ink); word-break: keep-all;">${this.escapeHtml(m.company)}</span>` : ''}
+                ${m.position && m.position.trim() !== '' ? `<span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 20px; padding: 0 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600;">${this.escapeHtml(m.position)}</span>` : ''}
                 ${m.pageURL && m.pageURL.trim() !== '' ? `
                   <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 20px; min-height: 20px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; border-radius: 4px; box-sizing: border-box; line-height: 1; white-space: nowrap;">
                     🌐 홈페이지 방문 →
@@ -1395,6 +1398,7 @@ const App = {
       name: googleUser ? (googleUser.displayName || "구글 연동 원우") : "구글 소셜 원우",
       cohort: 13,
       role: "regular",
+      position: "",
       company: "",
       industry: "",
       industryImg: "",
@@ -1435,6 +1439,7 @@ const App = {
     const name = document.getElementById("regName").value.trim();
     const cohort = parseInt(document.getElementById("regCohort").value, 10) || 13;
     const company = document.getElementById("regCompany").value.trim();
+    const position = document.getElementById("regPosition") ? document.getElementById("regPosition").value.trim() : "";
     const industry = document.getElementById("regIndustry").value;
     const phone = document.getElementById("regPhone").value.trim();
     const kakaoId = document.getElementById("regKakao").value.trim();
@@ -1467,6 +1472,7 @@ const App = {
       name,
       cohort,
       role: "regular", // 회원가입 완료 시 기본 일반회원 등급 승인
+      position: position || "",
       company,
       industry,
       industryImg: this.getIndustryImage(industry),
@@ -1637,6 +1643,8 @@ const App = {
     const user = this.members.find(m => m.id === this.currentUserId) || this.members[0];
 
     document.getElementById("profileName").value = user.name || "";
+    const profilePositionEl = document.getElementById("profilePosition");
+    if (profilePositionEl) profilePositionEl.value = user.position || "";
     document.getElementById("profileCompany").value = user.company || "";
     const profileCohortEl = document.getElementById("profileCohort");
     if (profileCohortEl) profileCohortEl.value = user.cohort || 13;
@@ -1674,7 +1682,17 @@ const App = {
     const feeStatusBadge = document.getElementById("feeStatusBadge");
     const unpaidFeeNotice = document.getElementById("unpaidFeeNotice");
 
-    if (sidebarName) sidebarName.textContent = user.name;
+    if (sidebarName) {
+      // 💡 [이름 직책 / 회사명] 포맷으로 사이드바 프로필 영역 구성
+      let displayName = user.name || "";
+      if (user.position && user.position.trim() !== "") {
+        displayName += ` ${user.position.trim()}`;
+      }
+      if (user.company && user.company.trim() !== "") {
+        displayName += ` / ${user.company.trim()}`;
+      }
+      sidebarName.textContent = displayName;
+    }
     if (sidebarRole) {
       sidebarRole.textContent = `${user.cohort}기 · ${this.getRoleName(user.role)}`;
     }
@@ -1764,12 +1782,14 @@ const App = {
     const selectedIndustry = document.getElementById("profileIndustry").value;
     const selectedCohort = parseInt(document.getElementById("profileCohort").value, 10) || 13;
     const industryImgPath = this.getIndustryImage(selectedIndustry);
+    const positionVal = document.getElementById("profilePosition") ? document.getElementById("profilePosition").value.trim() : "";
     const pageURLVal = document.getElementById("profilePageURL") ? document.getElementById("profilePageURL").value.trim() : "";
     const PemailVal = document.getElementById("profilePemail") ? document.getElementById("profilePemail").value.trim() : "";
 
     const updatedUser = {
       ...this.members[userIndex],
       name: document.getElementById("profileName").value.trim(),
+      position: positionVal,
       company: document.getElementById("profileCompany").value.trim(),
       cohort: selectedCohort,
       industry: selectedIndustry,
@@ -1823,7 +1843,7 @@ const App = {
             <input type="checkbox" class="member-select-check" value="${m.id}" data-feepaid="${m.feePaid ? '1' : '0'}" onchange="App.handleMemberSelectChange()" style="cursor: pointer; width: 16px; height: 16px;" />
           </td>
           <td><strong>${this.escapeHtml(m.name)}</strong> (${m.cohort}기)</td>
-          <td>${this.escapeHtml(m.company || '-')}</td>
+          <td>${this.escapeHtml(m.company || '-')}${m.position && m.position.trim() !== '' ? ` <span class="pill-tag-nvidia" style="background: rgba(0,0,0,0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); font-size: 10.5px; padding: 1px 5px;">${this.escapeHtml(m.position)}</span>` : ''}</td>
           <td>
             <select class="form-input" style="padding: 4px 8px; font-size: 13px; min-height: 32px; width: auto;" ${isAdmin ? '' : 'disabled'} onchange="App.changeMemberRole('${m.id}', this.value)">
               <option value="regular" ${m.role === 'regular' ? 'selected' : ''}>일반회원</option>
@@ -2397,6 +2417,7 @@ const App = {
     // 💡 두 계정 데이터 스마트 병합 (Merge)
     const mergedUser = {
       ...primary,
+      position: primary.position || secondary.position || "",
       googleUid: primary.googleUid || secondary.googleUid || "",
       googleEmail: primary.googleEmail || secondary.googleEmail || "",
       linkedGoogleUids: allGoogleUids,
