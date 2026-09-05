@@ -639,6 +639,7 @@ const App = {
               ` : ''}
             </div>
             <div style="flex: 1; min-width: 0;">
+              <!-- 💡 1줄 : 성명 + 기수/등급 배지 -->
               <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
                 <span style="font-size: 16.5px; font-weight: 700; line-height: 1.1; white-space: nowrap;">${this.escapeHtml(m.name)}</span>
                 <div style="display: inline-flex; align-items: center; gap: 3.5px; flex-shrink: 0;">
@@ -647,24 +648,30 @@ const App = {
                 </div>
               </div>
 
-              <!-- 💡 회사명 + 홈페이지 단추 (1줄 배치) -->
-              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; margin-top: 5px; min-width: 0;">
-                ${m.company ? `<span style="font-size: 13.5px; font-weight: 700; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(m.company)}">${this.escapeHtml(m.company)}</span>` : ''}
-                ${m.pageURL && m.pageURL.trim() !== '' ? `
-                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 19px; min-height: 19px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; border-radius: 3px; box-sizing: border-box; line-height: 1; white-space: nowrap; flex-shrink: 0;" title="회사 홈페이지 새 창 열기">
+              <!-- 💡 2줄 : 회사명 -->
+              ${m.company ? `
+                <div style="margin-top: 4px; font-size: 13.5px; font-weight: 700; color: var(--color-ink); word-break: keep-all; line-height: 1.3;">
+                  ${this.escapeHtml(m.company)}
+                </div>
+              ` : ''}
+
+              <!-- 💡 3줄 : 홈페이지 배지 -->
+              ${m.pageURL && m.pageURL.trim() !== '' ? `
+                <div style="margin-top: 4px;">
+                  <a href="${this.escapeHtml(m.pageURL.startsWith('http') ? m.pageURL : 'https://' + m.pageURL)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="height: 19px; min-height: 19px; padding: 0 6px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; border-radius: 3px; box-sizing: border-box; line-height: 1; white-space: nowrap;" title="회사 홈페이지 새 창 열기">
                     🌐 홈페이지
                   </a>
-                ` : ''}
-              </div>
+                </div>
+              ` : ''}
 
-              <!-- 💡 다음 줄: 직책 배지 + 업종 -->
+              <!-- 💡 4줄 : 업종 + 직책배지 -->
               <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 4px;">
-                ${m.position && m.position.trim() !== '' ? `<span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 19px; padding: 0 5px; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600; white-space: nowrap;">${this.escapeHtml(m.position)}</span>` : ''}
                 ${m.industry ? `
                   <span style="font-size: 11.5px; color: var(--color-mute); line-height: 1.3;">
                     ${this.escapeHtml(m.industry)}
                   </span>
                 ` : ''}
+                ${m.position && m.position.trim() !== '' ? `<span class="pill-tag-nvidia" style="background: rgba(0, 0, 0, 0.05); color: var(--color-ink); border: 1px solid var(--color-hairline); height: 18px; padding: 0 5px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; font-weight: 600; white-space: nowrap;">${this.escapeHtml(m.position)}</span>` : ''}
               </div>
             </div>
           </div>
