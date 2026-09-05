@@ -845,13 +845,18 @@ const App = {
                 ` : ''}
               </div>
 
-              <!-- 2열 (오른쪽): 카카오톡 행사 안내 공유 버튼 -->
+              <!-- 2열 (오른쪽): 카카오톡 행사 안내 및 설문조사 공유 버튼 -->
               <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; flex-shrink: 0; min-width: 180px;">
-                <button class="btn btn-sm" style="padding: 9px 16px; font-size: 12.5px; font-weight: 700; width: 100%; max-width: 200px; justify-content: center; background: #fee500; color: #191919; border: 1px solid #fee500; box-shadow: 0 2px 8px rgba(254, 229, 0, 0.25);" onclick="App.shareEventToKakao('${ev.id}')">
+                <button class="btn btn-sm" style="padding: 9px 16px; font-size: 12.5px; font-weight: 700; width: 100%; max-width: 210px; justify-content: center; background: #fee500; color: #191919; border: 1px solid #fee500; box-shadow: 0 2px 8px rgba(254, 229, 0, 0.25);" onclick="App.shareEventToKakao('${ev.id}')">
                   💬 카카오톡 행사 안내 공유
                 </button>
+                ${isExecOrAdmin ? `
+                  <button class="btn btn-outline btn-sm" style="padding: 8px 14px; font-size: 12px; font-weight: 700; width: 100%; max-width: 210px; justify-content: center; border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1);" onclick="App.shareEventSurveyToKakao('${ev.id}')" title="카카오톡 단톡방 참석 여부 투표 및 설문조사용 공지문구를 복사합니다">
+                    📋 카톡 설문/투표 문구 복사 (관리자)
+                  </button>
+                ` : ''}
                 ${ev.mapUrl && ev.mapUrl.trim() !== '' ? `
-                  <a href="${this.escapeHtml(ev.mapUrl.startsWith('http') ? ev.mapUrl : 'https://' + ev.mapUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="padding: 7px 14px; font-size: 12px; width: 100%; max-width: 200px; justify-content: center; border-color: #03C75A; color: #03C75A;">
+                  <a href="${this.escapeHtml(ev.mapUrl.startsWith('http') ? ev.mapUrl : 'https://' + ev.mapUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="padding: 7px 14px; font-size: 12px; width: 100%; max-width: 210px; justify-content: center; border-color: #03C75A; color: #03C75A;">
                     📍 네이버 지도 보기
                   </a>
                 ` : ''}
@@ -1155,6 +1160,46 @@ const App = {
 
     navigator.clipboard.writeText(shareText).then(() => {
       this.showToast(`🎉 [${ev.title}] 카카오톡 공유 포맷이 복사되었습니다! 단톡방에 바로 붙여넣어 공유하세요.`);
+    }).catch(() => {
+      alert(shareText);
+    });
+  },
+
+  shareEventSurveyToKakao(eventId) {
+    const ev = (this.events || []).find(e => e.id === eventId);
+    if (!ev) return;
+
+    const mapUrlStr = (ev.mapUrl || "").trim();
+    const cohortStr = ev.cohort || 13;
+
+    let shareText = `━━━━━━━━━━━━━━━━━\n` +
+      `📊 [기업가정신 포럼 ${cohortStr}기]\n` +
+      `   네트워킹 행사 참석 여부 투표 & 설문 조사\n` +
+      `━━━━━━━━━━━━━━━━━\n` +
+      `원우 여러분, 안녕하십니까!\n` +
+      `다가오는 [${ev.title}]의 원활한 행사장 대관 및 식사·프로그램 준비를 위해 참석 여부 조사를 진행합니다.\n\n` +
+      `📌 [행사 세부 안내]\n` +
+      `• 행사명: ${ev.title}\n` +
+      `• 일시: ${ev.date}\n` +
+      `• 장소: ${ev.location}\n`;
+
+    if (mapUrlStr) {
+      shareText += `• 위치 안내: ${mapUrlStr}\n`;
+    }
+
+    if (ev.description && ev.description.trim() !== '') {
+      shareText += `• 행사 개요: ${ev.description}\n`;
+    }
+
+    shareText += `\n📝 [참석 여부 투표 안내]\n` +
+      `단톡방 상단에 고정된 [투표/설문]에 참석 여부를 꼭 선택해 주시기 바랍니다.\n` +
+      `─────────────────\n` +
+      `✨ 인원 확정 및 원활한 준비를 위해 빠른 투표 참여를 부탁드립니다.\n` +
+      `   ${cohortStr}기 원우 여러분의 적극적인 참여와 성원을 바랍니다!\n\n` +
+      `   - ${cohortStr}기 원우회 운영진 배상 -`;
+
+    navigator.clipboard.writeText(shareText).then(() => {
+      this.showToast(`📋 [${ev.title}] 카카오톡 참석 투표 및 설문조사 안내 문구가 복사되었습니다! 단톡방에 바로 붙여넣어 공유하세요.`);
     }).catch(() => {
       alert(shareText);
     });
