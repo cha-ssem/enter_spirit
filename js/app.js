@@ -1672,6 +1672,7 @@ const App = {
     const sidebarName = document.getElementById("sidebarMemberName");
     const sidebarRole = document.getElementById("sidebarMemberRole");
     const feeStatusBadge = document.getElementById("feeStatusBadge");
+    const unpaidFeeNotice = document.getElementById("unpaidFeeNotice");
 
     if (sidebarName) sidebarName.textContent = user.name;
     if (sidebarRole) {
@@ -1683,12 +1684,26 @@ const App = {
         feeStatusBadge.textContent = `회비 납부 완료 (${user.feeDate})`;
         feeStatusBadge.style.background = "#dcfce7";
         feeStatusBadge.style.color = "#15803d";
+        if (unpaidFeeNotice) unpaidFeeNotice.style.display = "none";
       } else {
         feeStatusBadge.textContent = "회비 미납 상태";
         feeStatusBadge.style.background = "#fee2e2";
         feeStatusBadge.style.color = "#b91c1c";
+        if (unpaidFeeNotice) unpaidFeeNotice.style.display = "block";
       }
     }
+  },
+
+  /**
+   * 기업가정신 13기 공식 지정 회비 계좌번호 복사
+   */
+  copyFeeAccount() {
+    const accountNo = "79422963241";
+    navigator.clipboard.writeText(accountNo).then(() => {
+      this.showToast(`📋 회비 계좌번호(${accountNo} 카카오뱅크, 예금주: 김정순)가 복사되었습니다!`);
+    }).catch(() => {
+      prompt("아래 계좌번호를 복사해주세요:", accountNo);
+    });
   },
 
   getIndustryImage(industry) {
