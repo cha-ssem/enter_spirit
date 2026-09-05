@@ -274,12 +274,18 @@
             <!-- Schedule cards rendered dynamically -->
           </div>
 
-          <!-- 💡 관리자 전용: 마지막 강의 일정 아래 신규 강의 추가 단추 -->
+          <!-- 💡 관리자 전용: 마지막 강의 일정 아래 신규 강의 추가 & 네트워킹 행사 추가 단추 (1줄 배치) -->
           <div id="adminAddLectureBtnContainer" style="display: none; margin-top: 24px;">
-            <button type="button" class="btn btn-primary" onclick="App.openAddLectureModal()"
-              style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; font-weight: 700; gap: 8px;">
-              ➕ 13기 신규 강의 일정 추가하기 (관리자 전용)
-            </button>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary" onclick="App.openAddLectureModal()"
+                style="flex: 1 1 240px; justify-content: center; padding: 14px 16px; font-size: 14.5px; font-weight: 700; gap: 8px;">
+                ➕ 13기 신규 강의 일정 추가하기 (관리자 전용)
+              </button>
+              <button type="button" class="btn" onclick="App.openAddNetworkingEventModal()"
+                style="flex: 1 1 240px; justify-content: center; padding: 14px 16px; font-size: 14.5px; font-weight: 700; gap: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border: 1px solid #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); cursor: pointer;">
+                🎉 네트워킹 데이 및 행사 추가하기 (관리자 전용)
+              </button>
+            </div>
           </div>
         </div>
 
@@ -901,6 +907,143 @@
     </div>
   </div>
 
+  <!-- Add New Networking Event Modal Dialog (관리자 전용) -->
+  <div id="networkingEventAddModal" class="modal-overlay" onclick="if(event.target === this) App.closeAddNetworkingEventModal();">
+    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 24px; border: 1.5px solid #f59e0b;">
+      <span class="corner-square" style="background-color: #f59e0b;"></span>
+      <div class="modal-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.3);">
+        <h3 style="font-size: 20px; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+          🎉 네트워킹 데이 및 행사 등록 (관리자 전용)
+        </h3>
+        <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeAddNetworkingEventModal()">✕ 닫기</button>
+      </div>
+      <div class="modal-body" style="padding-top: 16px;">
+        <form id="addNewNetworkingEventForm" onsubmit="App.addNetworkingEvent(event)">
+          <div style="display: grid; grid-template-columns: 140px 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                기수 (Cohort) *
+              </label>
+              <input type="number" id="addEventCohort" class="form-input" value="13" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                네트워킹 행사명 *
+              </label>
+              <input type="text" id="addEventTitle" class="form-input" placeholder="예: 13기 네트워킹 데이 & 원우 만찬회" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                행사 일시 *
+              </label>
+              <input type="text" id="addEventDate" class="form-input" value="2026-09-19 (토) 18:00" placeholder="예: 2026-09-19 (토) 18:00" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                행사 장소 *
+              </label>
+              <input type="text" id="addEventLocation" class="form-input" placeholder="예: 판교 메디포스트 빌딩 2층 대연회장" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>🗺️ 장소 정보 (네이버 지도 공유 링크) *</span>
+              <span style="font-size: 11.5px; color: #03C75A; font-weight: 600;">네이버 지도 길찾기 URL</span>
+            </label>
+            <input type="url" id="addEventMapUrl" class="form-input" placeholder="예: https://naver.me/5v123abc 또는 https://map.naver.com/..." required />
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+              행사 세부 안내 / 상세 내용 (선택)
+            </label>
+            <textarea id="addEventDescription" class="form-input" rows="3" placeholder="네트워킹 행사 목적, 참가 안내, 일정 및 복장 규정..."></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.closeAddNetworkingEventModal()">취소</button>
+            <button type="submit" class="btn btn-sm" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; border: none; padding: 7px 16px;">
+              🎉 네트워킹 행사 등록
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Networking Event Modal Dialog (관리자 전용) -->
+  <div id="networkingEventEditModal" class="modal-overlay" onclick="if(event.target === this) App.closeEditNetworkingEventModal();">
+    <div class="modal-content" style="max-width: 600px; width: 92%; padding: 24px; border: 1.5px solid #f59e0b;">
+      <span class="corner-square" style="background-color: #f59e0b;"></span>
+      <div class="modal-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.3);">
+        <h3 id="editEventModalTitle" style="font-size: 20px; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+          ✏️ 네트워킹 행사 정보 수정
+        </h3>
+        <button class="btn btn-sm btn-outline-on-dark" style="padding: 2px 10px;" onclick="App.closeEditNetworkingEventModal()">✕ 닫기</button>
+      </div>
+      <div class="modal-body" style="padding-top: 16px;">
+        <form id="editNetworkingEventForm" onsubmit="App.updateNetworkingEvent(event)">
+          <input type="hidden" id="editEventId" />
+          <div style="display: grid; grid-template-columns: 140px 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                기수 (Cohort) *
+              </label>
+              <input type="number" id="editEventCohort" class="form-input" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                네트워킹 행사명 *
+              </label>
+              <input type="text" id="editEventTitle" class="form-input" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                행사 일시 *
+              </label>
+              <input type="text" id="editEventDate" class="form-input" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+                행사 장소 *
+              </label>
+              <input type="text" id="editEventLocation" class="form-input" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>🗺️ 장소 정보 (네이버 지도 공유 링크) *</span>
+              <span style="font-size: 11.5px; color: #03C75A; font-weight: 600;">네이버 지도 길찾기 URL</span>
+            </label>
+            <input type="url" id="editEventMapUrl" class="form-input" required />
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--color-ink); margin-bottom: 6px;">
+              행사 세부 안내 / 상세 내용 (선택)
+            </label>
+            <textarea id="editEventDescription" class="form-input" rows="3"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.closeEditNetworkingEventModal()">취소</button>
+            <button type="submit" class="btn btn-sm" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; border: none; padding: 7px 16px;">
+              💾 수정사항 저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Image Zoom Lightbox Modal Dialog -->
   <div id="imageZoomModal" class="modal-overlay" onclick="if(event.target === this) App.closeImageZoomModal();">
     <div class="modal-content"
@@ -1448,6 +1591,7 @@
     if (window.App) {
       if (typeof window.App.fetchCloudMembers === "function") window.App.fetchCloudMembers();
       if (typeof window.App.fetchCloudLectures === "function") window.App.fetchCloudLectures();
+      if (typeof window.App.fetchCloudEvents === "function") window.App.fetchCloudEvents();
       if (typeof window.App.fetchCloudLedger === "function") window.App.fetchCloudLedger();
     }
   </script>

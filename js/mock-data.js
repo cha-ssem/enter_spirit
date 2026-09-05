@@ -223,6 +223,8 @@ const INITIAL_LECTURES = [
   }
 ];
 
+const INITIAL_EVENTS = [];
+
 const INITIAL_LEDGER = [];
 
 /* Storage Helper */
@@ -303,6 +305,23 @@ class StorageService {
 
   static saveLectures(lectures) {
     localStorage.setItem("enterprise_13th_lectures", JSON.stringify(lectures));
+  }
+
+  static getEvents() {
+    const data = localStorage.getItem("enterprise_13th_events");
+    if (!data) {
+      localStorage.setItem("enterprise_13th_events", JSON.stringify(INITIAL_EVENTS));
+      return INITIAL_EVENTS;
+    }
+    try {
+      return JSON.parse(data) || [];
+    } catch (e) {
+      return INITIAL_EVENTS;
+    }
+  }
+
+  static saveEvents(events) {
+    localStorage.setItem("enterprise_13th_events", JSON.stringify(events));
   }
 
   static getLedger() {

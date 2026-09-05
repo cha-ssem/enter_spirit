@@ -11,12 +11,14 @@ const App = {
   currentTab: "home",
   members: [],
   lectures: [],
+  events: [],
   ledger: [],
   currentUserId: "mem-1301",
 
   init() {
     this.members = StorageService.getMembers();
     this.lectures = StorageService.getLectures();
+    this.events = StorageService.getEvents();
     this.ledger = StorageService.getLedger();
     this.initialBalance = StorageService.getInitialBalance();
 
@@ -39,10 +41,11 @@ const App = {
     this.updateRoleUI();
     this.renderCurrentTab();
 
-    // 💡 Firebase Firestore 클라우드 DB의 최신 회원 데이터, 강의 커리큘럼, 장부 데이터 비동기 동기화
+    // 💡 Firebase Firestore 클라우드 DB의 최신 회원 데이터, 강의 커리큘럼, 네트워킹 행사, 장부 데이터 비동기 동기화
     setTimeout(() => {
       if (typeof this.fetchCloudMembers === "function") this.fetchCloudMembers();
       if (typeof this.fetchCloudLectures === "function") this.fetchCloudLectures();
+      if (typeof this.fetchCloudEvents === "function") this.fetchCloudEvents();
       if (typeof this.fetchCloudLedger === "function") this.fetchCloudLedger();
     }, 300);
   },
@@ -253,6 +256,29 @@ const App = {
       }
     } catch (err) {
       console.warn("Firestore lectures 클라우드 DB 로딩 예외:", err);
+    }
+  },
+
+  async fetchCloudEvents() {
+    if (!window.db || !window.FS || !window.FS.getDocs) return;
+
+    try {
+      const querySnapshot = await window.FS.getDocs(window.FS.collection(window.db, "events"));
+      if (!querySnapshot) return;
+
+      const cloudEvents = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        cloudEvents.push({ ...data, id: docSnap.id || data.id });
+      });
+
+      if (cloudEvents.length > 0) {
+        this.events = cloudEvents;
+        StorageService.saveEvents(this.events);
+        this.renderSchedule();
+      }
+    } catch (err) {
+      console.warn("Firestore events 클라우드 DB 로딩 예외:", err);
     }
   },
 
@@ -647,73 +673,195 @@ const App = {
     `).join("");
   },
 
-  /* 3. SCHEDULE TAB */
+  /* 3. SCHEDULE & NETWORKING EVENTS */
+  parseScheduleDate(dateStr) {
+    if (!dateStr) return 0;
+    const cleaned = dateStr.replace(/[년월일]/g, "-");
+    const dateMatch = cleaned.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+    if (dateMatch) {
+      const y = parseInt(dateMatch[1], 10);
+      const m = parseInt(dateMatch[2], 10) - 1;
+      const d = parseInt(dateMatch[3], 10);
+      const timeMatch = dateStr.match(/(\d{1,2}):(\d{1,2})/);
+      const h = timeMatch ? parseInt(timeMatch[1], 10) : 0;
+      const min = timeMatch ? parseInt(timeMatch[2], 10) : 0;
+      return new Date(y, m, d, h, min).getTime();
+    }
+    return 0;
+  },
+
   renderSchedule() {
     const container = document.getElementById("scheduleListContainer");
     if (!container) return;
 
     const isExecOrAdmin = this.currentRole === "exec" || this.currentRole === "admin";
 
-    if (this.lectures.length === 0) {
-      container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--color-mute);">등록된 13기 강의 커리큘럼이 없습니다.</div>`;
+    // 강의 및 네트워킹 행사 통합 리스트 구성
+    const combined = [];
+    (this.lectures || []).forEach(l => {
+      combined.push({
+        type: "lecture",
+        item: l,
+        time: this.parseScheduleDate(l.date),
+        priority: 1, // 동일 일자/시간일 때 강의가 먼저 표출
+        week: l.week || 0
+      });
+    });
+
+    (this.events || []).forEach(ev => {
+      combined.push({
+        type: "event",
+        item: ev,
+        time: this.parseScheduleDate(ev.date),
+        priority: 2, // 행사 일시에 해당하는 기존 강의 일정 바로 다음에 표출
+        week: 999
+      });
+    });
+
+    if (combined.length === 0) {
+      container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--color-mute);">등록된 13기 강의 커리큘럼 및 일정이 없습니다.</div>`;
       return;
     }
 
-    container.innerHTML = this.lectures.map(l => `
-      <div class="product-card" style="padding: 24px;">
-        <span class="corner-square"></span>
-        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-          
-          <!-- 1열 (왼쪽): 강의 관련 상세 내용 -->
-          <div style="flex: 1 1 340px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-              <span class="pill-tag-nvidia">WEEK ${l.week}</span>
-              ${isExecOrAdmin ? `
-                <div style="display: flex; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11.5px; min-height: 26px;" onclick="App.openEditLectureModal(${l.week})">
-                    ✏️ 수정
-                  </button>
-                  <button class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11.5px; min-height: 26px; border-color: #dc2626; color: #dc2626;" onclick="App.deleteLecture(${l.week})">
-                    🗑️ 삭제
-                  </button>
+    // 시간 순서 오름차순 정렬 (동일 일자일 경우 기존 강의 일정 다음으로 네트워킹 행사 배치)
+    combined.sort((a, b) => {
+      if (a.time && b.time) {
+        if (a.time !== b.time) return a.time - b.time;
+        return a.priority - b.priority;
+      }
+      if (a.time && !b.time) return -1;
+      if (!a.time && b.time) return 1;
+      return (a.week - b.week) || (a.priority - b.priority);
+    });
+
+    container.innerHTML = combined.map(entry => {
+      if (entry.type === "lecture") {
+        const l = entry.item;
+        return `
+          <div class="product-card" style="padding: 24px;">
+            <span class="corner-square"></span>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              
+              <!-- 1열 (왼쪽): 강의 관련 상세 내용 -->
+              <div style="flex: 1 1 340px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <span class="pill-tag-nvidia">WEEK ${l.week}</span>
+                  ${isExecOrAdmin ? `
+                    <div style="display: flex; gap: 6px;">
+                      <button class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11.5px; min-height: 26px;" onclick="App.openEditLectureModal(${l.week})">
+                        ✏️ 수정
+                      </button>
+                      <button class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11.5px; min-height: 26px; border-color: #dc2626; color: #dc2626;" onclick="App.deleteLecture(${l.week})">
+                        🗑️ 삭제
+                      </button>
+                    </div>
+                  ` : ''}
                 </div>
-              ` : ''}
-            </div>
 
-            <h3 style="font-size: 20px; margin: 6px 0; font-weight: 700;">${this.escapeHtml(l.title)}</h3>
-            <div style="font-size: 13.5px; color: var(--color-mute); margin-bottom: 8px;">
-              <strong style="color: var(--color-ink);">${this.escapeHtml(l.speaker)}</strong> | 📅 ${this.escapeHtml(l.date)} | 📍 ${this.escapeHtml(l.location)}
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-              <div style="font-size: 12.5px; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-mute); border: 1px solid var(--color-hairline);">
-                이력: ${this.escapeHtml(l.speakerBio)}
+                <h3 style="font-size: 20px; margin: 6px 0; font-weight: 700;">${this.escapeHtml(l.title)}</h3>
+                <div style="font-size: 13.5px; color: var(--color-mute); margin-bottom: 8px;">
+                  <strong style="color: var(--color-ink);">${this.escapeHtml(l.speaker)}</strong> | 📅 ${this.escapeHtml(l.date)} | 📍 ${this.escapeHtml(l.location)}
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                  <div style="font-size: 12.5px; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-mute); border: 1px solid var(--color-hairline);">
+                    이력: ${this.escapeHtml(l.speakerBio || '초빙 강사')}
+                  </div>
+                  ${l.speakerURL && l.speakerURL.trim() !== '' ? `
+                    <a href="${this.escapeHtml(l.speakerURL.startsWith('http') ? l.speakerURL : 'https://' + l.speakerURL)}" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; font-weight: 700; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-primary); border: 1px solid var(--color-hairline); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                      🔗 강사 소속 및 활동사항 →
+                    </a>
+                  ` : ''}
+                </div>
+                <p style="font-size: 14.5px; color: var(--color-body); margin: 0; line-height: 1.5;">${this.escapeHtml(l.description || '')}</p>
               </div>
-              ${l.speakerURL && l.speakerURL.trim() !== '' ? `
-                <a href="${this.escapeHtml(l.speakerURL.startsWith('http') ? l.speakerURL : 'https://' + l.speakerURL)}" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; font-weight: 700; background: var(--color-surface-soft); padding: 3px 10px; border-radius: var(--radius-sm); color: var(--color-primary); border: 1px solid var(--color-hairline); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                  🔗 강사 소속 및 활동사항 →
-                </a>
-              ` : ''}
+
+              <!-- 2열 (오른쪽): DOWNLOAD MATERIAL 및 액션 단추 -->
+              <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; flex-shrink: 0; min-width: 180px;">
+                ${(l.materialUrl && l.materialUrl.trim() !== '') ? `
+                  <button class="btn btn-outline btn-sm" style="padding: 9px 16px; font-size: 13px; font-weight: 700; width: 100%; max-width: 200px; justify-content: center;" onclick="App.downloadMaterial('${this.escapeHtml(l.title)}', '${this.escapeHtml(l.materialUrl)}')">
+                    📁 DOWNLOAD MATERIAL
+                  </button>
+                ` : ''}
+                ${isExecOrAdmin ? `
+                  <button class="btn btn-primary btn-sm" style="padding: 7px 14px; font-size: 12px; width: 100%; max-width: 200px; justify-content: center;" onclick="App.shareToKakao(${l.week})">
+                    💬 KAKAO SHARE TEXT
+                  </button>
+                ` : ''}
+              </div>
+
             </div>
-            <p style="font-size: 14.5px; color: var(--color-body); margin: 0; line-height: 1.5;">${this.escapeHtml(l.description)}</p>
           </div>
+        `;
+      } else {
+        // 🎉 네트워킹 행사 카드 (오렌지/골드 테마 차별화 색상 및 네이버 지도 링크 & 카카오톡 공유)
+        const ev = entry.item;
+        return `
+          <div class="product-card" style="padding: 24px; border: 1.5px solid #f59e0b; background: linear-gradient(145deg, rgba(245, 158, 11, 0.07), rgba(217, 119, 6, 0.03)); position: relative; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);">
+            <span class="corner-square" style="background-color: #f59e0b;"></span>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              
+              <!-- 1열 (왼쪽): 행사 상세 내용 -->
+              <div style="flex: 1 1 340px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <span class="pill-tag-nvidia" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; border: none; box-shadow: 0 0 10px rgba(245, 158, 11, 0.35); padding: 3px 10px;">
+                    🎉 NETWORKING DAY
+                  </span>
+                  <span style="font-size: 11.5px; font-weight: 700; color: #f59e0b; background: rgba(245, 158, 11, 0.15); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.35);">
+                    ${ev.cohort || 13}기 특별 행사
+                  </span>
+                  ${isExecOrAdmin ? `
+                    <div style="display: flex; gap: 6px;">
+                      <button class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11.5px; min-height: 26px; border-color: #f59e0b; color: #f59e0b;" onclick="App.openEditNetworkingEventModal('${ev.id}')">
+                        ✏️ 수정
+                      </button>
+                      <button class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11.5px; min-height: 26px; border-color: #dc2626; color: #dc2626;" onclick="App.deleteNetworkingEvent('${ev.id}')">
+                        🗑️ 삭제
+                      </button>
+                    </div>
+                  ` : ''}
+                </div>
 
-          <!-- 2열 (오른쪽): DOWNLOAD MATERIAL (강의자료 업로드 시에만 표출) 및 액션 단추 -->
-          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; flex-shrink: 0; min-width: 180px;">
-            ${(l.materialUrl && l.materialUrl.trim() !== '') ? `
-              <button class="btn btn-outline btn-sm" style="padding: 9px 16px; font-size: 13px; font-weight: 700; width: 100%; max-width: 200px; justify-content: center;" onclick="App.downloadMaterial('${this.escapeHtml(l.title)}', '${this.escapeHtml(l.materialUrl)}')">
-                📁 DOWNLOAD MATERIAL
-              </button>
-            ` : ''}
-            ${isExecOrAdmin ? `
-              <button class="btn btn-primary btn-sm" style="padding: 7px 14px; font-size: 12px; width: 100%; max-width: 200px; justify-content: center;" onclick="App.shareToKakao(${l.week})">
-                💬 KAKAO SHARE TEXT
-              </button>
-            ` : ''}
+                <h3 style="font-size: 20px; margin: 6px 0; font-weight: 800; color: var(--color-ink);">${this.escapeHtml(ev.title)}</h3>
+                <div style="font-size: 13.5px; color: var(--color-mute); margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                  <span>🗓️ 일시: <strong style="color: var(--color-ink);">${this.escapeHtml(ev.date)}</strong></span>
+                  <span>|</span>
+                  <span>📍 장소: <strong style="color: var(--color-ink);">${this.escapeHtml(ev.location)}</strong></span>
+                </div>
+
+                <!-- 🗺️ 장소 정보 (네이버 지도 공유 링크) -->
+                ${ev.mapUrl && ev.mapUrl.trim() !== '' ? `
+                  <div style="margin-bottom: 10px;">
+                    <a href="${this.escapeHtml(ev.mapUrl.startsWith('http') ? ev.mapUrl : 'https://' + ev.mapUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm"
+                      style="display: inline-flex; align-items: center; gap: 6px; border-color: #03C75A; color: #03C75A; background: rgba(3, 199, 90, 0.08); font-weight: 700; padding: 5px 12px; text-decoration: none; border-radius: var(--radius-sm); font-size: 12.5px;">
+                      🗺️ 네이버 지도 위치 확인 / 길찾기 ↗
+                    </a>
+                  </div>
+                ` : ''}
+
+                ${ev.description && ev.description.trim() !== '' ? `
+                  <p style="font-size: 14px; color: var(--color-body); margin: 0; line-height: 1.55; white-space: pre-line; background: rgba(0,0,0,0.12); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--color-hairline);">
+                    ${this.escapeHtml(ev.description)}
+                  </p>
+                ` : ''}
+              </div>
+
+              <!-- 2열 (오른쪽): 카카오톡 행사 안내 공유 버튼 -->
+              <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; flex-shrink: 0; min-width: 180px;">
+                <button class="btn btn-sm" style="padding: 9px 16px; font-size: 12.5px; font-weight: 700; width: 100%; max-width: 200px; justify-content: center; background: #fee500; color: #191919; border: 1px solid #fee500; box-shadow: 0 2px 8px rgba(254, 229, 0, 0.25);" onclick="App.shareEventToKakao('${ev.id}')">
+                  💬 카카오톡 행사 안내 공유
+                </button>
+                ${ev.mapUrl && ev.mapUrl.trim() !== '' ? `
+                  <a href="${this.escapeHtml(ev.mapUrl.startsWith('http') ? ev.mapUrl : 'https://' + ev.mapUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="padding: 7px 14px; font-size: 12px; width: 100%; max-width: 200px; justify-content: center; border-color: #03C75A; color: #03C75A;">
+                    📍 네이버 지도 보기
+                  </a>
+                ` : ''}
+              </div>
+
+            </div>
           </div>
-
-        </div>
-      </div>
-    `).join("");
+        `;
+      }
+    }).join("");
 
     const adminAddBtnContainer = document.getElementById("adminAddLectureBtnContainer");
     if (adminAddBtnContainer) {
@@ -760,6 +908,8 @@ const App = {
     const description = document.getElementById("addLecDescription").value.trim();
     const addSpkUrlEl = document.getElementById("addLecSpeakerUrl");
     const speakerURL = addSpkUrlEl ? addSpkUrlEl.value.trim() : "";
+    const addMatUrlEl = document.getElementById("addLecMaterialUrl");
+    const materialUrl = addMatUrlEl ? addMatUrlEl.value.trim() : "";
 
     if (isNaN(week) || !title || !date || !speaker) {
       this.showToast("⚠️ 필수 정보를 정확히 입력해 주세요.");
@@ -768,19 +918,20 @@ const App = {
 
     const newLecture = {
       id: `lec-w${week}`,
-      cohort, // 💡 Lectures DB 기수 번호 필드 (13기)
+      cohort,
       week,
       title,
       date,
       location,
       speaker,
-      speakerURL: speakerURL, // 💡 Firestore Lectures DB의 'speakerURL' 필드만 유일하게 기록
+      speakerBio,
+      speakerURL: speakerURL,
       description,
       materialUrl: materialUrl,
       photos: []
     };
 
-    // 💡 Firebase Firestore 클라우드 DB 'lectures' 컬렉션에 실시간 저장!
+    // 💡 Firebase Firestore 클라우드 DB 'lectures' 컬렉션에 실시간 저장
     if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
       try {
         await window.FS.setDoc(window.FS.doc(window.db, "lectures", `lec-w${week}`), newLecture, { merge: true });
@@ -807,6 +958,206 @@ const App = {
     if (form) form.reset();
 
     this.renderSchedule();
+  },
+
+  /* 💡 네트워킹 데이 및 행사 등록 & 관리 */
+  openAddNetworkingEventModal() {
+    const modal = document.getElementById("networkingEventAddModal");
+    if (modal) {
+      const addCohort = document.getElementById("addEventCohort");
+      if (addCohort) addCohort.value = 13;
+      modal.classList.add("active");
+    }
+  },
+
+  closeAddNetworkingEventModal() {
+    const modal = document.getElementById("networkingEventAddModal");
+    if (modal) modal.classList.remove("active");
+  },
+
+  async addNetworkingEvent(e) {
+    if (e) e.preventDefault();
+
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 행사 등록 권한은 관리자 및 임원 전용입니다.");
+      return;
+    }
+
+    const cohort = parseInt(document.getElementById("addEventCohort").value, 10) || 13;
+    const title = document.getElementById("addEventTitle").value.trim();
+    const date = document.getElementById("addEventDate").value.trim();
+    const location = document.getElementById("addEventLocation").value.trim();
+    const mapUrl = document.getElementById("addEventMapUrl").value.trim();
+    const description = document.getElementById("addEventDescription").value.trim();
+
+    if (!title || !date || !location || !mapUrl) {
+      this.showToast("⚠️ 필수 정보(행사명, 일시, 장소, 네이버 지도 링크)를 모두 입력해 주세요.");
+      return;
+    }
+
+    const newEventId = `event-${Date.now()}`;
+    const newEvent = {
+      id: newEventId,
+      cohort,
+      title,
+      date,
+      location,
+      mapUrl,
+      description,
+      createdAt: new Date().toISOString()
+    };
+
+    // 💡 Firebase Firestore 클라우드 DB 'events' 컬렉션에 실시간 저장
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "events", newEventId), newEvent, { merge: true });
+        console.log("Firebase Firestore 'events' 컬렉션에 네트워킹 행사 성공 저장!");
+      } catch (err) {
+        console.warn("Firestore events 등록 시도 예외:", err);
+      }
+    }
+
+    if (!this.events) this.events = [];
+    this.events.push(newEvent);
+    StorageService.saveEvents(this.events);
+
+    this.closeAddNetworkingEventModal();
+    this.showToast(`🎉 [${title}] 네트워킹 행사가 등록되었습니다!`);
+
+    const form = document.getElementById("addNewNetworkingEventForm");
+    if (form) form.reset();
+
+    this.renderSchedule();
+  },
+
+  openEditNetworkingEventModal(eventId) {
+    const ev = (this.events || []).find(e => e.id === eventId);
+    if (!ev) return;
+
+    document.getElementById("editEventId").value = ev.id;
+    document.getElementById("editEventCohort").value = ev.cohort || 13;
+    document.getElementById("editEventTitle").value = ev.title || "";
+    document.getElementById("editEventDate").value = ev.date || "";
+    document.getElementById("editEventLocation").value = ev.location || "";
+    document.getElementById("editEventMapUrl").value = ev.mapUrl || "";
+    document.getElementById("editEventDescription").value = ev.description || "";
+
+    const titleEl = document.getElementById("editEventModalTitle");
+    if (titleEl) titleEl.textContent = `✏️ [${ev.title}] 행사 정보 수정`;
+
+    const modal = document.getElementById("networkingEventEditModal");
+    if (modal) modal.classList.add("active");
+  },
+
+  closeEditNetworkingEventModal() {
+    const modal = document.getElementById("networkingEventEditModal");
+    if (modal) modal.classList.remove("active");
+  },
+
+  async updateNetworkingEvent(e) {
+    if (e) e.preventDefault();
+
+    if (this.currentRole !== "admin" && this.currentRole !== "exec") {
+      this.showToast("🔒 행사 수정 권한은 관리자 및 임원 전용입니다.");
+      return;
+    }
+
+    const eventId = document.getElementById("editEventId").value;
+    const index = (this.events || []).findIndex(ev => ev.id === eventId);
+    if (index === -1) return;
+
+    const cohort = parseInt(document.getElementById("editEventCohort").value, 10) || 13;
+    const title = document.getElementById("editEventTitle").value.trim();
+    const date = document.getElementById("editEventDate").value.trim();
+    const location = document.getElementById("editEventLocation").value.trim();
+    const mapUrl = document.getElementById("editEventMapUrl").value.trim();
+    const description = document.getElementById("editEventDescription").value.trim();
+
+    if (!title || !date || !location || !mapUrl) {
+      this.showToast("⚠️ 필수 정보를 모두 입력해 주세요.");
+      return;
+    }
+
+    this.events[index] = {
+      ...this.events[index],
+      cohort,
+      title,
+      date,
+      location,
+      mapUrl,
+      description,
+      updatedAt: new Date().toISOString()
+    };
+
+    // 💡 Firebase Firestore 클라우드 DB 'events' 수정 동기화
+    if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
+      try {
+        await window.FS.setDoc(window.FS.doc(window.db, "events", eventId), this.events[index], { merge: true });
+        console.log(`Firebase Firestore: [${title}] 행사 수정사항 동기화 완료!`);
+      } catch (err) {
+        console.warn("Firestore events 수정 시도 예외:", err);
+      }
+    }
+
+    StorageService.saveEvents(this.events);
+    this.showToast(`[${title}] 행사 정보가 수정되었습니다.`);
+    this.closeEditNetworkingEventModal();
+    this.renderSchedule();
+  },
+
+  async deleteNetworkingEvent(eventId) {
+    const ev = (this.events || []).find(e => e.id === eventId);
+    if (!ev) return;
+
+    if (confirm(`네트워킹 행사 [${ev.title}]를 삭제하시겠습니까?`)) {
+      this.events = this.events.filter(e => e.id !== eventId);
+      StorageService.saveEvents(this.events);
+
+      // 💡 Firebase Firestore 클라우드 DB 'events' 삭제 동기화
+      if (window.db && window.FS && window.FS.deleteDoc && window.FS.doc) {
+        try {
+          await window.FS.deleteDoc(window.FS.doc(window.db, "events", eventId));
+          console.log(`Firebase Firestore: [${ev.title}] 행사 삭제 완료!`);
+        } catch (err) {
+          console.warn("Firestore events 삭제 시도 예외:", err);
+        }
+      }
+
+      this.showToast(`[${ev.title}] 행사가 삭제되었습니다.`);
+      this.renderSchedule();
+    }
+  },
+
+  shareEventToKakao(eventId) {
+    const ev = (this.events || []).find(e => e.id === eventId);
+    if (!ev) return;
+
+    const mapUrlStr = (ev.mapUrl || "").trim();
+
+    let shareText = `━━━━━━━━━━━━━━━━━\n` +
+      `🎉 [기업가정신 포럼 ${ev.cohort || 13}기]\n` +
+      `   네트워킹 데이 & 특별 행사 안내\n` +
+      `━━━━━━━━━━━━━━━━━\n` +
+      `📌 [행사명]\n` +
+      `   ${ev.title}\n\n` +
+      `🗓️ [일시] ${ev.date}\n` +
+      `📍 [장소] ${ev.location}\n`;
+
+    if (mapUrlStr) {
+      shareText += `🗺️ [네이버 지도 위치/길찾기]\n   ${mapUrlStr}\n`;
+    }
+
+    if (ev.description && ev.description.trim() !== '') {
+      shareText += `\n📝 [행사 세부 안내]\n${ev.description}\n`;
+    }
+
+    shareText += `─────────────────\n✨ ${ev.cohort || 13}기 원우 여러분의 많은 관심과 참석을 바랍니다!`;
+
+    navigator.clipboard.writeText(shareText).then(() => {
+      this.showToast(`🎉 [${ev.title}] 카카오톡 공유 포맷이 복사되었습니다! 단톡방에 바로 붙여넣어 공유하세요.`);
+    }).catch(() => {
+      alert(shareText);
+    });
   },
 
   openEditLectureModal(week) {
