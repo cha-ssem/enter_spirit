@@ -3590,6 +3590,96 @@ const App = {
   },
 
   /**
+   * 💡 회비 납부자 명단 카카오톡 공유 및 클립보드 복사
+   * - 제목: [회비 납부자 명단]
+   * - 회비 납부자(회원 데이터 및 장부 내역)를 오름차순(가나다순)으로 정렬
+   * - 쉼표로 구분하여 클립보드에 복사 및 카카오톡 공유
+   */
+  shareFeePayersToKakao() {
+    try {
+      const payerSet = new Set();
+
+      // 1. 회원 목록에서 회비 납부 완료 회원(feePaid === true) 추출
+      if (Array.isArray(this.members)) {
+        this.members.forEach(m => {
+          if (m && m.feePaid && m.name && m.name.trim()) {
+            payerSet.add(m.name.trim());
+          }
+        });
+      }
+
+      // 2. 장부 목록에서 회비 납부 내역 이름 추출 (상호 보완)
+      if (Array.isArray(this.ledger)) {
+        this.ledger.forEach(item => {
+          if (!item || item.id === "initial_balance" || item.isConfig) return;
+          const isFee = item.type === "fee" || item.category === "정회원 회비" || (item.item && typeof item.item === "string" && item.item.includes("회비"));
+          if (isFee && item.name && item.name.trim() && item.name !== "미지정" && item.name !== "기초이월잔고") {
+            payerSet.add(item.name.trim());
+          }
+        });
+      }
+
+      // 3. 납부자 이름을 한국어 가나다(오름차순) 정렬
+      const sortedNames = Array.from(payerSet).sort((a, b) => a.localeCompare(b, "ko-KR"));
+
+      if (sortedNames.length === 0) {
+        this.showToast("⚠️ 현재 등록된 회비 납부자 내역이 없습니다.");
+        return;
+      }
+
+      const count = sortedNames.length;
+      const namesListStr = sortedNames.join(", ");
+
+      // 현재 복사 일시 포맷팅 (YYYY-MM-DD HH:mm:ss)
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+      // 요구사항: '회비 납부자 명단' 제목 + 오름차순 이름(쉼표 구분) + 마지막 복사 일시
+      const shareText = `[회비 납부자 명단] (총 ${count}명)\n${namesListStr}\n(${dateTimeStr} 기준)`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText).then(() => {
+          this.showToast(`💬 회비 납부자 명단(총 ${count}명)이 클립보드에 복사되었습니다! 카카오톡에 바로 붙여넣어 공유하세요.`);
+        }).catch(err => {
+          console.warn("클립보드 복사 실패, 대체 방식 시도:", err);
+          this.fallbackCopyPayerText(shareText, count);
+        });
+      } else {
+        this.fallbackCopyPayerText(shareText, count);
+      }
+    } catch (err) {
+      console.error("회비 납부자 명단 공유 오류:", err);
+      this.showToast("❌ 회비 납부자 명단 생성 중 오류가 발생했습니다.");
+    }
+  },
+
+  /**
+   * 💡 클립보드 복사 Fallback 처리
+   */
+  fallbackCopyPayerText(text, count) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      this.showToast(`💬 회비 납부자 명단(총 ${count}명)이 클립보드에 복사되었습니다! 카카오톡에 바로 붙여넣어 공유하세요.`);
+    } catch (e) {
+      prompt("아래 회비 납부자 명단을 복사(Ctrl+C)하세요:", text);
+    }
+    document.body.removeChild(textArea);
+  },
+
+  /**
    * 💡 장부 목록 엑셀(.xlsx) 파일 내보내기
    * - 파일명: 기업가정신13기_장부_YYYY-MM-DD.xlsx
    * - 시트명: YYYY-MM-DD HH시 MM분 SS초

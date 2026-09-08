@@ -834,6 +834,11 @@
           <input type="text" id="ledgerSearchInput" class="form-input"
             style="padding: 5px 12px; font-size: 13px; width: 220px;" placeholder="성명, 장소, 내역 검색..."
             oninput="App.renderLedger()" />
+          <button type="button" class="btn btn-sm" onclick="App.shareFeePayersToKakao()"
+            style="background: #fee500; color: #191919; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1px solid #fee500; border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.15);"
+            title="회비 납부자 명단을 오름차순으로 정렬하여 클립보드에 복사하고 카카오톡으로 공유합니다">
+            💬 회비 납부자 이름 공유
+          </button>
           <button type="button" class="btn btn-sm" onclick="App.exportLedgerToExcel()"
             style="background: #107c41; color: #ffffff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: none; border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.15);"
             title="현재 작성된 전체 장부 내역을 엑셀(.xlsx) 파일로 내보내기">
