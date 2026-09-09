@@ -3640,8 +3640,8 @@ const App = {
       const seconds = String(now.getSeconds()).padStart(2, "0");
       const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-      // 요구사항: '회비 납부자 명단' 제목 + 오름차순 이름(쉼표 구분) + 마지막 복사 일시
-      const shareText = `[회비 납부자 명단] (총 ${count}명)\n${namesListStr}\n(${dateTimeStr} 기준)`;
+      // 요구사항: 【회비 납부자 명단】 제목 + 오름차순 이름(쉼표 구분) + 마지막 복사 일시
+      const shareText = `【회비 납부자 명단】 (총 ${count}명)\n${namesListStr}\n(${dateTimeStr} 기준)`;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareText).then(() => {
