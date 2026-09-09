@@ -2825,7 +2825,7 @@ const App = {
     return email.toString().trim().toLowerCase();
   },
 
-  // 💡 중복 회원 계정 쌍 감지 (전화번호 숫자열 일치 OR 이메일 일치)
+  // 💡 중복 회원 계정 쌍 감지 (전화번호 숫자열 일치 OR 이메일 일치 OR 성명+회사명 일치)
   findDuplicateAccountPairs() {
     const pairs = [];
     const visited = new Set();
@@ -2836,6 +2836,8 @@ const App = {
 
       const p1 = this.normalizePhone(m1.phone);
       const e1 = this.normalizeEmail(m1.Pemail || m1.googleEmail);
+      const n1 = (m1.name || "").toString().replace(/\s+/g, "");
+      const c1 = (m1.company || "").toString().trim().replace(/\s+/g, "").toLowerCase();
 
       for (let j = i + 1; j < this.members.length; j++) {
         const m2 = this.members[j];
@@ -2843,6 +2845,8 @@ const App = {
 
         const p2 = this.normalizePhone(m2.phone);
         const e2 = this.normalizeEmail(m2.Pemail || m2.googleEmail);
+        const n2 = (m2.name || "").toString().replace(/\s+/g, "");
+        const c2 = (m2.company || "").toString().trim().replace(/\s+/g, "").toLowerCase();
 
         let matchType = null;
 
@@ -2854,10 +2858,12 @@ const App = {
         else if (e1 && e2 && e1 === e2) {
           matchType = "이메일 주소 일치";
         }
-        // 3) 성명이 동일하고 (이메일 또는 전화번호 중 하나라도 동일/유사)
-        else if (m1.name && m2.name && m1.name.trim() === m2.name.trim()) {
+        // 3) 성명이 동일하고 (이메일/전화번호 또는 회사명 일치)
+        else if (n1 && n2 && n1 === n2) {
           if ((p1 && p2 && p1 === p2) || (e1 && e2 && e1 === e2)) {
             matchType = "성명 및 연락처/이메일 동일";
+          } else if (c1 && c2 && c1 === c2) {
+            matchType = "성명 및 회사명 동일";
           }
         }
 
@@ -2891,7 +2897,7 @@ const App = {
 
     let m1 = null;
     let m2 = null;
-    let matchReason = "전화번호/이메일 일치 감지";
+    let matchReason = "전화번호/이메일/회사명 일치 감지";
 
     if (primaryId && secondaryId) {
       m1 = this.members.find(m => m.id === primaryId);
@@ -2911,7 +2917,7 @@ const App = {
           <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
           <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">중복 계정이 감지되지 않았습니다.</h4>
           <p style="font-size: 14px; color: var(--color-mute); margin-bottom: 24px;">
-            현재 전화번호(하이픈 '-' 포함 및 미포함 비교) 또는 이메일이 동일한 중복 회원 계정이 없습니다.
+            현재 전화번호, 이메일 또는 성명 및 회사명이 동일한 중복 회원 계정이 없습니다.
           </p>
           <button class="btn btn-outline" onclick="App.closeMergeAccountModal()">확인 및 닫기</button>
         </div>
