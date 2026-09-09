@@ -2566,6 +2566,7 @@ const App = {
       kakaoId: rawName,
       avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
       summary: "관리자 직접 등록 회원",
+      isDirectAdminRegistered: true,
       feePaid: feePaid,
       feeDate: feePaid ? feeDate : "",
       joinDate: feeDate // 💡 입력한 날짜를 가입일로 설정
@@ -3021,7 +3022,9 @@ const App = {
         </h5>
         <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #166534; line-height: 1.6;">
           <li>선택하신 <strong id="selectedPrimaryLabel" style="color: #1d4ed8;">주 계정</strong>의 프로필 데이터가 최종 유지됩니다.</li>
-          <li>Google 소셜 연동 정보('googleUid'), 이메일, 회비 납부 내역('feePaid')은 부 계정의 유효 데이터가 주 계정으로 <strong>자동 합성(Merge)</strong>됩니다.</li>
+          <li><strong>회비 납부 사항 완벽 보존</strong>: 두 계정 중 하나라도 회비를 납부한 경우, <strong>회비 납부 상태(납부완료), 납부 일자, 정회원(regular) 등급</strong>이 주 계정으로 온전히 승계·유지됩니다.</li>
+          <li><strong>최초 가입일 보존</strong>: 관리자의 직접 등록 일자가 아닌 회원이 직접 가입/로그인한 원래 계정의 <strong>최초 가입일자(joinDate)</strong>가 유지됩니다.</li>
+          <li><strong>소셜 연동 승계</strong>: Google 소셜 연동 정보('googleUid'), 이메일 등 유효 데이터가 주 계정으로 <strong>자동 합성(Merge)</strong>되어 이후 어떤 계정으로도 로그인 가능합니다.</li>
           <li>선택되지 않은 부 계정은 데이터베이스(Firestore) 및 회원 목록에서 <strong>안전하게 삭제 및 일원화</strong>됩니다.</li>
         </ul>
       </div>
@@ -3079,9 +3082,55 @@ const App = {
       ...(secondary.linkedGoogleEmails || [])
     ].filter(Boolean)));
 
+    // 💡 회비 납부 상태 및 납부 날짜 보존
+    const isFeePaid = Boolean(primary.feePaid || secondary.feePaid);
+    let mergedFeeDate = "";
+    if (primary.feePaid && primary.feeDate) {
+      mergedFeeDate = primary.feeDate;
+    } else if (secondary.feePaid && secondary.feeDate) {
+      mergedFeeDate = secondary.feeDate;
+    } else {
+      mergedFeeDate = primary.feeDate || secondary.feeDate || "";
+    }
+
+    // 💡 권한 등급 랭크 결정 (admin > executive > regular > associate)
+    const rolePriority = { admin: 4, executive: 3, regular: 2, associate: 1 };
+    const pRank = rolePriority[primary.role] || 1;
+    const sRank = rolePriority[secondary.role] || 1;
+    let mergedRole = pRank >= sRank ? (primary.role || "associate") : (secondary.role || "associate");
+
+    // 회비 납부 회원은 최소한 '정회원(regular)' 등급 이상 유지 보장
+    if (isFeePaid && (mergedRole === "associate" || !mergedRole)) {
+      mergedRole = "regular";
+    }
+
+    // 💡 가입일(joinDate) 보존 규칙:
+    // 관리자 직접 등록(임시 가입일) 계정이 아닌, 실제 회원이 가입/로그인한 원래 계정의 joinDate를 우선 적용
+    const isDirectAdmin = (m) => m && (
+      m.summary === "관리자 직접 등록 회원" || 
+      m.password === "direct_admin_registered_user" || 
+      m.isDirectAdminRegistered === true
+    );
+
+    let mergedJoinDate = "";
+    const pIsAdminReg = isDirectAdmin(primary);
+    const sIsAdminReg = isDirectAdmin(secondary);
+
+    if (pIsAdminReg && !sIsAdminReg && secondary.joinDate) {
+      // 주 계정이 관리자 직접 등록 계정이고 부 계정이 실제 가입 계정인 경우 -> 부 계정의 가입일 사용
+      mergedJoinDate = secondary.joinDate;
+    } else if (!pIsAdminReg && sIsAdminReg && primary.joinDate) {
+      // 주 계정이 실제 가입 계정이고 부 계정이 관리자 직접 등록 계정인 경우 -> 주 계정의 가입일 사용
+      mergedJoinDate = primary.joinDate;
+    } else {
+      // 둘 다 일반 가입 계정이거나 둘 다 관리자 등록인 경우 존재하는 유효 가입일 사용
+      mergedJoinDate = primary.joinDate || secondary.joinDate || "";
+    }
+
     // 💡 두 계정 데이터 스마트 병합 (Merge)
     const mergedUser = {
       ...primary,
+      role: mergedRole,
       position: primary.position || secondary.position || "",
       googleUid: primary.googleUid || secondary.googleUid || "",
       googleEmail: primary.googleEmail || secondary.googleEmail || "",
@@ -3095,9 +3144,10 @@ const App = {
       industryImg: primary.industryImg || secondary.industryImg || this.getIndustryImage(primary.industry || secondary.industry || ""),
       location: primary.location || secondary.location || "",
       pageURL: primary.pageURL || secondary.pageURL || "",
-      summary: primary.summary || secondary.summary || "",
-      feePaid: primary.feePaid || secondary.feePaid || false,
-      feeDate: primary.feePaid ? primary.feeDate : (secondary.feePaid ? secondary.feeDate : primary.feeDate || "")
+      summary: (primary.summary && primary.summary !== "관리자 직접 등록 회원") ? primary.summary : (secondary.summary || primary.summary || ""),
+      feePaid: isFeePaid,
+      feeDate: mergedFeeDate,
+      joinDate: mergedJoinDate
     };
 
     // 1) Firestore DB 처리 (부 계정 삭제 및 주 계정 병합 업데이트)
@@ -3117,7 +3167,7 @@ const App = {
     StorageService.saveMembers(this.members);
 
     this.closeMergeAccountModal();
-    this.showToast(`🎉 ${mergedUser.name} 원우님의 중복 계정이 성공적으로 하나로 통합되었습니다!`);
+    this.showToast(`🎉 ${mergedUser.name} 원우님의 중복 계정이 성공적으로 하나로 통합되었습니다! (회비 납부/정회원 자격 유지)`);
     this.renderAdmin();
     this.renderMemberDirectory();
   },
