@@ -4023,7 +4023,7 @@ const App = {
 
     let receiptUrl = "";
 
-    // 💡 영수증 이미지 첨부 시 HTML5 Canvas로 경량화 (.jpg 300px) 압축 변환
+    // 💡 영수증 이미지 첨부 시 HTML5 Canvas로 고화질 최적화 (.jpg 1000px, 85% 품질)
     if (receiptFileInput && receiptFileInput.files && receiptFileInput.files[0]) {
       const file = receiptFileInput.files[0];
       receiptUrl = await new Promise((resolve) => {
@@ -4033,7 +4033,7 @@ const App = {
           img.onload = () => {
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
-            const maxDim = 400;
+            const maxDim = 1000;
             let width = img.width;
             let height = img.height;
             if (width > height) {
@@ -4050,7 +4050,7 @@ const App = {
             canvas.width = width;
             canvas.height = height;
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL("image/jpeg", 0.75));
+            resolve(canvas.toDataURL("image/jpeg", 0.85));
           };
           img.src = evt.target.result;
         };
@@ -4280,7 +4280,7 @@ const App = {
     else if (type === "expense_dining") category = "회식/네트워킹 지출";
     else if (type === "expense_gift") category = "선물/행사 지출";
 
-    // 신규 영수증 이미지 첨부 시 HTML5 Canvas 경량화
+    // 신규 영수증 이미지 첨부 시 HTML5 Canvas 고화질 최적화 (.jpg 1000px, 85% 품질)
     if (fileInput && fileInput.files && fileInput.files[0]) {
       const file = fileInput.files[0];
       receiptUrl = await new Promise((resolve) => {
@@ -4290,7 +4290,7 @@ const App = {
           img.onload = () => {
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
-            const maxDim = 400;
+            const maxDim = 1000;
             let width = img.width;
             let height = img.height;
             if (width > height) {
@@ -4307,7 +4307,7 @@ const App = {
             canvas.width = width;
             canvas.height = height;
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL("image/jpeg", 0.75));
+            resolve(canvas.toDataURL("image/jpeg", 0.85));
           };
           img.src = evt.target.result;
         };
