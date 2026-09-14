@@ -378,12 +378,34 @@ class StorageService {
       }
       return item.id !== "led-01" && item.id !== "led-02" && item.id !== "led-03" && item.id !== "led-04";
     }).map(item => {
+      let updatedItem = { ...item };
       // 기존 '회원관리 탭 자동 연동' 메모 문구를 '관리자 납부 처리'로 자동 정리
       if (item && item.note && (item.note.includes("회원관리 탭 자동 연동") || item.note.includes("회원관리 일괄 납부 처리 연동"))) {
         needsSave = true;
-        return { ...item, note: "관리자 납부 처리" };
+        updatedItem.note = "관리자 납부 처리";
       }
-      return item;
+
+      // 💡 입력 및 동기화 순서 보장을 위한 createdAt / timestamp 보정
+      if (!updatedItem.createdAt) {
+        needsSave = true;
+        const match = (updatedItem.id || "").match(/\d{13}/);
+        if (match) {
+          const ts = parseInt(match[0], 10);
+          updatedItem.createdAt = new Date(ts).toISOString();
+          updatedItem.timestamp = ts;
+        } else if (updatedItem.date) {
+          updatedItem.createdAt = `${updatedItem.date}T00:00:00.000Z`;
+          updatedItem.timestamp = new Date(updatedItem.date).getTime() || 0;
+        } else {
+          updatedItem.createdAt = new Date(0).toISOString();
+          updatedItem.timestamp = 0;
+        }
+      } else if (!updatedItem.timestamp) {
+        updatedItem.timestamp = new Date(updatedItem.createdAt).getTime() || 0;
+        needsSave = true;
+      }
+
+      return updatedItem;
     });
 
     if (filtered.length !== parsed.length || needsSave) {

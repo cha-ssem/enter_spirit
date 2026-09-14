@@ -369,10 +369,47 @@ const App = {
           normalizedNote = "관리자 납부 처리";
         }
 
-        cloudLedger.push({ ...data, id: docId, note: normalizedNote });
+        // 💡 입력 및 동기화 순서 보장을 위한 타임스탬프 정규화
+        let createdAt = data.createdAt;
+        let timestamp = data.timestamp;
+        if (!createdAt) {
+          const match = (docId || "").match(/\d{13}/);
+          if (match) {
+            timestamp = parseInt(match[0], 10);
+            createdAt = new Date(timestamp).toISOString();
+          } else if (data.date) {
+            createdAt = `${data.date}T00:00:00.000Z`;
+            timestamp = new Date(data.date).getTime() || 0;
+          } else {
+            createdAt = new Date(0).toISOString();
+            timestamp = 0;
+          }
+        } else if (!timestamp) {
+          timestamp = new Date(createdAt).getTime() || 0;
+        }
+
+        cloudLedger.push({
+          ...data,
+          id: docId,
+          note: normalizedNote,
+          createdAt,
+          timestamp,
+          updatedAt: data.updatedAt || createdAt
+        });
       });
 
-      cloudLedger.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      // 💡 입력 및 동기화된 순서와 거래일자 기준으로 정렬하여 저장 (1순위: 거래일자 역순, 2순위: 입력/동기화 시점 역순)
+      cloudLedger.sort((a, b) => {
+        const dateA = a.date || "";
+        const dateB = b.date || "";
+        const dComp = dateB.localeCompare(dateA);
+        if (dComp !== 0) return dComp;
+        const tA = a.timestamp || (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const tB = b.timestamp || (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        if (tB !== tA) return tB - tA;
+        return String(b.id || "").localeCompare(String(a.id || ""));
+      });
+
       this.ledger = cloudLedger;
       StorageService.saveLedger(this.ledger);
 
@@ -2583,6 +2620,7 @@ const App = {
         }
       }
 
+      const nowIso = new Date(now).toISOString();
       feeLedgerEntry = {
         id: `led-fee-${now}`,
         date: feeDate, // 💡 입력한 날짜를 장부 일자로 설정
@@ -2594,7 +2632,10 @@ const App = {
         location: "-",
         attendees: "-",
         note: `${processorName} 회원 직접 등록 및 회비 처리`,
-        receiptUrl: ""
+        receiptUrl: "",
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        timestamp: now
       };
 
       this.ledger.unshift(feeLedgerEntry);
@@ -2684,9 +2725,11 @@ const App = {
         );
       }
 
-      // 💡 장부(ledger) 회비 수입 항목 자동 등록
+      // 💡 장부(ledger) 회비 수입 항목 자동 등록 (동시 생성 시 순서 보장을 위해 인덱스 기반 타임스탬프 부여)
+      const entryTs = now + idx;
+      const entryIso = new Date(entryTs).toISOString();
       const feeLedgerEntry = {
-        id: `led-fee-${now}-${idx}`,
+        id: `led-fee-${entryTs}-${m.id}`,
         date: feeDate,
         type: "fee",
         category: "정회원 회비",
@@ -2696,7 +2739,10 @@ const App = {
         location: "-",
         attendees: "-",
         note: `${processorName} 일괄 납부 처리`,
-        receiptUrl: ""
+        receiptUrl: "",
+        createdAt: entryIso,
+        updatedAt: entryIso,
+        timestamp: entryTs
       };
 
       this.ledger.unshift(feeLedgerEntry);
@@ -2751,14 +2797,17 @@ const App = {
     // 2) 💡 회계 장부(ledger)에 이미 기록된 해당 회원의 회비 항목 일자도 함께 동기화
     let ledgerUpdated = false;
     const ledgerSyncPromises = [];
+    const nowIso = new Date().toISOString();
     this.ledger.forEach(item => {
       if (item.type === "fee" && item.name && item.name.trim() === member.name.trim()) {
         item.date = newDate;
+        item.updatedAt = nowIso;
         ledgerUpdated = true;
         if (window.db && window.FS && window.FS.setDoc && window.FS.doc) {
           ledgerSyncPromises.push(
             window.FS.setDoc(window.FS.doc(window.db, "ledger", item.id), {
-              date: newDate
+              date: newDate,
+              updatedAt: nowIso
             }, { merge: true }).catch(console.warn)
           );
         }
@@ -3336,8 +3385,10 @@ const App = {
     }
 
     // 2) 💡 정회원 회비 납부 내역을 장부(ledger) 수입 항목으로 자동 기록 연동!
+    const nowTs = Date.now();
+    const nowIso = new Date(nowTs).toISOString();
     const feeLedgerEntry = {
-      id: `led-fee-${Date.now()}`,
+      id: `led-fee-${nowTs}`,
       date: feeDate,
       type: "fee",
       category: "정회원 회비",
@@ -3347,7 +3398,10 @@ const App = {
       location: "-",
       attendees: "-",
       note: `${processorName} 납부 처리`,
-      receiptUrl: ""
+      receiptUrl: "",
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      timestamp: nowTs
     };
 
     this.ledger.unshift(feeLedgerEntry);
@@ -3450,12 +3504,15 @@ const App = {
 
     // 💡 1. 과거순(오름차순)으로 누적 잔액(Running Balance) 정확하게 계산
     const sortedChronological = [...validLedger].sort((a, b) => {
-      const dateA = a.date || a.createdAt || "";
-      const dateB = b.date || b.createdAt || "";
+      const dateA = a.date || "";
+      const dateB = b.date || "";
       const dComp = dateA.localeCompare(dateB);
       if (dComp !== 0) return dComp;
-      const idA = a.createdAt || a.id || "";
-      const idB = b.createdAt || b.id || "";
+      const tA = a.timestamp || (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const tB = b.timestamp || (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      if (tA !== tB) return tA - tB;
+      const idA = a.id || "";
+      const idB = b.id || "";
       return String(idA).localeCompare(String(idB));
     });
 
@@ -3471,16 +3528,19 @@ const App = {
       item._runningBalance = currentRunningBalance;
     });
 
-    // 💡 2. 화면 표시용 (회비 납부 및 거래 등록 처리 순서의 내림차순 정렬)
+    // 💡 2. 화면 표시용 (회비 납부 및 거래 등록 처리 순서의 내림차순 정렬: 최신 입력 및 거래가 상단)
     const displayLedger = [...validLedger].sort((a, b) => {
       // 1순위: 거래 일자 내림차순
-      const dateA = a.date || a.createdAt || "";
-      const dateB = b.date || b.createdAt || "";
+      const dateA = a.date || "";
+      const dateB = b.date || "";
       const dComp = dateB.localeCompare(dateA);
       if (dComp !== 0) return dComp;
-      // 2순위: 등록/처리 시점 내림차순 (가장 최근에 납부/등록 처리된 레코드가 맨 위로)
-      const idA = a.createdAt || a.id || "";
-      const idB = b.createdAt || b.id || "";
+      // 2순위: 등록/동기화 시점 내림차순 (가장 최근에 납부/등록 처리된 레코드가 맨 위로)
+      const tA = a.timestamp || (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const tB = b.timestamp || (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      if (tB !== tA) return tB - tA;
+      const idA = a.id || "";
+      const idB = b.id || "";
       return String(idB).localeCompare(String(idA));
     });
 
@@ -3772,12 +3832,15 @@ const App = {
 
       // 💡 1. 과거순(오름차순)으로 정렬하여 누적 잔액 계산
       const sortedChronological = [...validLedger].sort((a, b) => {
-        const dateA = a.date || a.createdAt || "";
-        const dateB = b.date || b.createdAt || "";
+        const dateA = a.date || "";
+        const dateB = b.date || "";
         const dComp = dateA.localeCompare(dateB);
         if (dComp !== 0) return dComp;
-        const idA = a.createdAt || a.id || "";
-        const idB = b.createdAt || b.id || "";
+        const tA = a.timestamp || (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const tB = b.timestamp || (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        if (tA !== tB) return tA - tB;
+        const idA = a.id || "";
+        const idB = b.id || "";
         return String(idA).localeCompare(String(idB));
       });
 
@@ -3986,8 +4049,10 @@ const App = {
       });
     }
 
+    const nowTs = Date.now();
+    const nowIso = new Date(nowTs).toISOString();
     const newEntry = {
-      id: `led-${Date.now()}`,
+      id: `led-${nowTs}`,
       date: new Date().toISOString().split("T")[0],
       type,
       category,
@@ -3997,7 +4062,10 @@ const App = {
       location: location || "-",
       attendees: attendees || "-",
       note,
-      receiptUrl
+      receiptUrl,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      timestamp: nowTs
     };
 
     this.ledger.unshift(newEntry);
@@ -4235,6 +4303,7 @@ const App = {
       });
     }
 
+    const nowIso = new Date().toISOString();
     const updatedEntry = {
       ...this.ledger[itemIndex],
       date,
@@ -4246,7 +4315,8 @@ const App = {
       location: location || "-",
       attendees: attendees || "-",
       note: note || "-",
-      receiptUrl: receiptUrl || ""
+      receiptUrl: receiptUrl || "",
+      updatedAt: nowIso
     };
 
     this.ledger[itemIndex] = updatedEntry;
