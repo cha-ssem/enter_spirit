@@ -3597,7 +3597,7 @@ const App = {
         <td style="white-space: nowrap;">
           <strong style="color: #4338ca;">13기 초기 이월금</strong>
         </td>
-        <td style="white-space: nowrap;">
+        <td style="max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="기초 잔고 설정액 (기수 이월)">
           <span style="color: var(--color-ink);">기초 잔고 설정액 (기수 이월)</span>
         </td>
         <td style="font-weight: 700; color: #4f46e5; white-space: nowrap; text-align: right;">
@@ -3607,7 +3607,7 @@ const App = {
           ${initBalance.toLocaleString()}원
         </td>
         <td style="color: #cbd5e1; font-size: 12px; text-align: center; white-space: nowrap;">-</td>
-        <td style="color: var(--color-mute); font-size: 12px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;" title="${this.escapeHtml(this.initialBalanceUpdatedAt ? `설정일: ${initialDateDisplay}` : '기초 설정 잔고')}">
+        <td style="color: var(--color-mute); font-size: 12px; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;" title="${this.escapeHtml(this.initialBalanceUpdatedAt ? `설정일: ${initialDateDisplay}` : '기초 설정 잔고')}">
           ${this.initialBalanceUpdatedAt ? `설정일: ${initialDateDisplay}` : '기초 설정 잔고'}
         </td>
         <td style="white-space: nowrap; text-align: center;">
@@ -3686,7 +3686,7 @@ const App = {
             <strong>${this.escapeHtml(item.name || '미지정')}</strong>
             ${item.location && item.location !== '-' ? `<br><span style="font-size: 11.5px; color: var(--color-mute);">📍 ${this.escapeHtml(item.location)}</span>` : ''}
           </td>
-          <td style="white-space: nowrap;">
+          <td style="max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(item.item || '내역 미기재')}">
             ${this.escapeHtml(item.item || '내역 미기재')}
             ${item.attendees && item.attendees !== '-' ? ` <span style="font-size: 11.5px; color: #4f46e5; font-weight: 700;">(👥 ${this.escapeHtml(item.attendees)})</span>` : ''}
           </td>
@@ -3703,7 +3703,7 @@ const App = {
               </button>
             ` : '<span style="color: #cbd5e1; font-size: 12px;">-</span>'}
           </td>
-          <td style="color: var(--color-mute); font-size: 12px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;" title="${this.escapeHtml(item.note || '-')}">${this.escapeHtml(item.note || '-')}</td>
+          <td style="color: var(--color-mute); font-size: 12px; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;" title="${this.escapeHtml(item.note || '-')}">${this.escapeHtml(item.note || '-')}</td>
           <td style="white-space: nowrap; text-align: center;">
             ${canManageLedger ? `
               <div style="display: flex; gap: 4px; align-items: center; justify-content: center;">
