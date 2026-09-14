@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>기업가 정신 통합 플랫폼</title>
+  <title>기업가 정신 포럼 통합 플랫폼</title>
   <meta name="description" content="기업가 정신 원우들을 위한 회원 디렉토리, 주차별 강의 일정, 회비 및 네트워킹 장부 관리 서비스" />
 
   <!-- Content Security Policy (웹 표준 다계층 통신 보안) -->
@@ -2031,12 +2031,15 @@
           <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <div>
-              <span style="font-size: 13px; font-weight: 700; color: #4338ca;">📊 강의 자료 설정 (인포그래픽 1개 또는 파일 다운로드 링크)</span>
-              <span style="font-size: 11.5px; color: var(--color-mute); margin-left: 6px;">* 인포그래픽 이미지 또는 다운로드 링크 중 선택 설정</span>
+              <span style="font-size: 13px; font-weight: 700; color: #4338ca;">📊 강의 자료 설정 (인포그래픽 1개 또는 파일 다운로드
+                링크)</span>
+              <span style="font-size: 11.5px; color: var(--color-mute); margin-left: 6px;">* 인포그래픽 이미지 또는 다운로드 링크 중 선택
+                설정</span>
             </div>
 
             <!-- 자료 유형 선택 탭/버튼 -->
-            <div style="display: flex; gap: 6px; background: rgba(99,102,241,0.08); padding: 3px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.2);">
+            <div
+              style="display: flex; gap: 6px; background: rgba(99,102,241,0.08); padding: 3px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.2);">
               <button type="button" id="galleryMaterialTabInfographic" class="btn btn-sm"
                 style="padding: 3px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; background: #4f46e5; color: #ffffff; border: none; cursor: pointer;"
                 onclick="App.switchGalleryMaterialType('infographic')">
@@ -2063,10 +2066,8 @@
             </div>
 
             <!-- 인포그래픽 미리보기 그리드 -->
-            <div id="galleryInfographicPreviewGrid"
-              style="min-height: 60px;">
-              <div
-                style="text-align: center; color: var(--color-mute); font-size: 12.5px; padding: 12px 0;">
+            <div id="galleryInfographicPreviewGrid" style="min-height: 60px;">
+              <div style="text-align: center; color: var(--color-mute); font-size: 12.5px; padding: 12px 0;">
                 선택된 인포그래픽 이미지가 없습니다. (선택 사항)
               </div>
             </div>
@@ -2088,10 +2089,10 @@
                   📑 표시할 자료명 / 파일 이름
                 </label>
                 <input type="text" id="galleryDownloadNameInput" class="form-input"
-                  placeholder="예: 1주차_기업가정신_강의교안.pdf 또는 강의 요약 자료집"
-                  style="width: 100%; font-size: 13px;" />
+                  placeholder="예: 1주차_기업가정신_강의교안.pdf 또는 강의 요약 자료집" style="width: 100%; font-size: 13px;" />
               </div>
-              <div style="font-size: 11.5px; color: #6b7280; background: rgba(255,255,255,0.7); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.15);">
+              <div
+                style="font-size: 11.5px; color: #6b7280; background: rgba(255,255,255,0.7); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.15);">
                 💡 구글 드라이브 공유 링크, 노션 자료 링크, PDF 파일 링크 등을 등록하면 갤러리 카드에서 바로 다운로드 버튼이 제공됩니다.
               </div>
             </div>

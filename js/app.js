@@ -1818,8 +1818,82 @@ const App = {
     }
   },
 
-  downloadMaterial(title) {
-    this.showToast(`[${title}] 강의 자료가 다운로드되었습니다.`);
+  /* 💡 구글 드라이브 / Docs / 프레젠테이션 -> PDF 직다운로드(Direct Download) URL 변환 */
+  getDirectDownloadUrl(url) {
+    if (!url || typeof url !== "string") return "";
+    const trimmed = url.trim();
+    if (!trimmed) return "";
+
+    // 1. Google Drive 파일 링크
+    // 예: https://drive.google.com/file/d/1A2B3C4D_XYZ/view?usp=sharing
+    // 예: https://drive.google.com/open?id=1A2B3C4D_XYZ
+    // 예: https://drive.google.com/uc?id=1A2B3C4D_XYZ
+    const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                           trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:[a-zA-Z0-9_=&-]*&)?id=([a-zA-Z0-9_-]+)/);
+    if (driveFileMatch && driveFileMatch[1]) {
+      return `https://drive.google.com/uc?export=download&id=${driveFileMatch[1]}`;
+    }
+
+    // 2. Google Docs 문서 -> PDF 직다운로드
+    const docsMatch = trimmed.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/);
+    if (docsMatch && docsMatch[1]) {
+      return `https://docs.google.com/document/d/${docsMatch[1]}/export?format=pdf`;
+    }
+
+    // 3. Google Presentation/Slides -> PDF 직다운로드
+    const slidesMatch = trimmed.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+    if (slidesMatch && slidesMatch[1]) {
+      return `https://docs.google.com/presentation/d/${slidesMatch[1]}/export/pdf`;
+    }
+
+    // 4. Google Sheets 스프레드시트 -> PDF 직다운로드
+    const sheetsMatch = trimmed.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+    if (sheetsMatch && sheetsMatch[1]) {
+      return `https://docs.google.com/spreadsheets/d/${sheetsMatch[1]}/export?format=pdf`;
+    }
+
+    return trimmed;
+  },
+
+  /* 💡 구글 링크 여부 확인 */
+  isGoogleDriveLink(url) {
+    if (!url || typeof url !== "string") return false;
+    return /drive\.google\.com|docs\.google\.com/i.test(url);
+  },
+
+  /* 💡 강의 교안 / 파일 다운로드 실행 (구글 링크 PDF 자동 직다운로드 지원) */
+  downloadLectureFile(title, originalUrl) {
+    if (!originalUrl || originalUrl.trim() === '') {
+      this.showToast("⚠️ 다운로드할 강의 자료 링크가 등록되어 있지 않습니다.");
+      return;
+    }
+
+    const directUrl = this.getDirectDownloadUrl(originalUrl);
+    const isGoogle = this.isGoogleDriveLink(originalUrl);
+
+    if (isGoogle) {
+      this.showToast(`📥 [${title || '강의 자료'}] Google PDF 다운로드를 시작합니다.`);
+    } else {
+      this.showToast(`📥 [${title || '강의 자료'}] 파일 다운로드를 시작합니다.`);
+    }
+
+    // 새 탭/다운로드 트리거
+    const tempLink = document.createElement("a");
+    tempLink.href = directUrl;
+    tempLink.target = "_blank";
+    tempLink.rel = "noopener noreferrer";
+    tempLink.download = `${title || '강의교안'}.pdf`;
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    document.body.removeChild(tempLink);
+  },
+
+  downloadMaterial(title, url) {
+    if (url && url.trim() !== '') {
+      this.downloadLectureFile(title, url);
+    } else {
+      this.showToast(`[${title}] 강의 자료가 다운로드되었습니다.`);
+    }
   },
 
   shareToKakao(week) {
@@ -4835,46 +4909,61 @@ const App = {
         `;
       }
 
-      // 1-C. 강의 파일 / 교안 다운로드 카드 HTML 템플릿
+      // 1-C. 강의 파일 / 교안 다운로드 카드 HTML 템플릿 (구글 링크 원클릭 PDF 직접 다운로드 지원)
       let downloadCardHtml = "";
       if (item.downloadUrl) {
         const downloadTitle = item.downloadName || (parsedWeekNum ? `${parsedWeekNum}주차 강의 교안 및 자료집` : `${item.title} 강의 자료`);
+        const isGoogle = this.isGoogleDriveLink(item.downloadUrl);
+        const directUrl = this.getDirectDownloadUrl(item.downloadUrl);
+
         downloadCardHtml = `
           <div style="padding: 16px; background: rgba(59, 130, 246, 0.05); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
               <span style="background: #2563eb; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);">
-                📁 강의 자료 / 교안 다운로드
+                📁 강의 자료 / 교안 파일 다운로드
               </span>
-              <span style="font-size: 11.5px; color: var(--color-mute);">클라우드 파일 연동</span>
+              <span style="font-size: 11.5px; color: var(--color-mute);">${isGoogle ? '구글 드라이브 PDF 연동' : '클라우드 파일 연동'}</span>
             </div>
 
             <!-- 자료 상세 안내 박스 -->
-            <div style="background: var(--color-surface); border: 1px solid var(--color-hairline); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="background: var(--color-surface); border: 1px solid var(--color-hairline); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 8px; background: #eff6ff; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
-                  📑
+                <div style="width: 44px; height: 44px; border-radius: 8px; background: #eff6ff; border: 1.5px solid #bfdbfe; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                  📄
                 </div>
                 <div style="flex: 1; min-width: 0;">
                   <div style="font-size: 14px; font-weight: 700; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(downloadTitle)}">
                     ${this.escapeHtml(downloadTitle)}
                   </div>
-                  <div style="font-size: 11.5px; color: var(--color-mute); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(item.downloadUrl)}">
-                    🔗 ${this.escapeHtml(item.downloadUrl)}
+                  <div style="font-size: 11.5px; color: ${isGoogle ? '#2563eb' : 'var(--color-mute)'}; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(item.downloadUrl)}">
+                    ${isGoogle ? '⚡ 구글 링크 원클릭 PDF 직접 다운로드 설정됨' : `🔗 ${this.escapeHtml(item.downloadUrl)}`}
                   </div>
                 </div>
               </div>
 
-              <a href="${this.escapeHtml(item.downloadUrl)}" target="_blank" rel="noopener noreferrer"
-                 onclick="event.stopPropagation()"
-                 style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 16px; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);"
-                 onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#2563eb'; this.style.transform='none'">
-                ⬇️ 강의 자료 / 파일 다운로드 (새 창) ↗
-              </a>
+              <!-- 다운로드 및 웹 뷰어 버튼 그룹 -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button"
+                   onclick="event.stopPropagation(); App.downloadLectureFile('${this.escapeHtml(downloadTitle)}', '${this.escapeHtml(item.downloadUrl)}')"
+                   style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px 16px; background: #2563eb; color: #ffffff; border: none; border-radius: 6px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);"
+                   onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#2563eb'; this.style.transform='none'">
+                  ⬇️ ${isGoogle ? 'Google PDF 강의 교안 바로 다운로드' : '강의 교안 파일 바로 다운로드'} ↗
+                </button>
+
+                ${isGoogle ? `
+                  <a href="${this.escapeHtml(item.downloadUrl)}" target="_blank" rel="noopener noreferrer"
+                     onclick="event.stopPropagation()"
+                     style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 6px 12px; background: rgba(37,99,235,0.06); color: #2563eb; border: 1px solid rgba(37,99,235,0.25); text-decoration: none; border-radius: 6px; font-size: 11.5px; font-weight: 600; transition: background 0.2s ease;"
+                     onmouseover="this.style.background='rgba(37,99,235,0.12)'" onmouseout="this.style.background='rgba(37,99,235,0.06)'">
+                    👁️ Google Drive 웹 뷰어로 열기 ↗
+                  </a>
+                ` : ''}
+              </div>
             </div>
 
             <div style="font-size: 11.5px; color: var(--color-mute); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-              <span>💡 구글 드라이브 / PDF / 웹 교안</span>
-              <span style="color: #2563eb; font-weight: 600;">안전한 외부 연결 ↗</span>
+              <span>💡 ${isGoogle ? '구글 드라이브 / Docs / PDF 직접 다운로드' : '클라우드 파일 연동'}</span>
+              <span style="color: #2563eb; font-weight: 600;">원클릭 다운로드 ↗</span>
             </div>
           </div>
         `;
