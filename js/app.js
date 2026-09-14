@@ -2124,7 +2124,14 @@ const App = {
     const isAdmin = this.currentRole === "admin";
     const todayStr = new Date().toLocaleDateString("sv-SE");
 
-    tableBody.innerHTML = this.members.map(m => {
+    // 💡 회원 성명(가나다) 오름차순 정렬
+    const sortedMembers = [...(this.members || [])].sort((a, b) => {
+      const nameA = a.name || "";
+      const nameB = b.name || "";
+      return nameA.localeCompare(nameB, "ko-KR");
+    });
+
+    tableBody.innerHTML = sortedMembers.map(m => {
       const defaultFeeDate = (m.feeDate && m.feeDate !== "-") ? m.feeDate : todayStr;
 
       return `
@@ -2359,6 +2366,30 @@ const App = {
       }
     }
 
+    // 💡 선택한 회원에 따른 중복 계정 통합 버튼 상태 동적 반응
+    const mergeBtn = document.getElementById("mergeAccountBtn");
+    if (mergeBtn) {
+      if (count === 2) {
+        mergeBtn.innerHTML = `🔗 선택 2명 중복 감지 및 통합`;
+        mergeBtn.style.background = "#6366f1";
+        mergeBtn.style.color = "#ffffff";
+        mergeBtn.style.borderColor = "#6366f1";
+        mergeBtn.style.boxShadow = "0 2px 8px rgba(99, 102, 241, 0.35)";
+      } else if (count === 1) {
+        mergeBtn.innerHTML = `🔗 선택 회원 중복 탐색 및 통합`;
+        mergeBtn.style.background = "#f5f3ff";
+        mergeBtn.style.color = "#4f46e5";
+        mergeBtn.style.borderColor = "#6366f1";
+        mergeBtn.style.boxShadow = "none";
+      } else {
+        mergeBtn.innerHTML = `🔗 중복 계정 감지 및 통합`;
+        mergeBtn.style.background = "#f5f3ff";
+        mergeBtn.style.color = "#4f46e5";
+        mergeBtn.style.borderColor = "#6366f1";
+        mergeBtn.style.boxShadow = "none";
+      }
+    }
+
     const selectAllEl = document.getElementById("selectAllMembersCheck");
     if (selectAllEl && allChecks.length > 0) {
       if (count === 0) {
@@ -2388,8 +2419,10 @@ const App = {
       return;
     }
 
-    // 선택된 회원 중 미납 상태인 회원만 필터링
-    const targetMembers = this.members.filter(m => selectedIds.includes(m.id) && !m.feePaid);
+    // 선택된 회원 중 미납 상태인 회원만 필터링 후 성명 오름차순 정렬
+    const targetMembers = this.members
+      .filter(m => selectedIds.includes(m.id) && !m.feePaid)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko-KR"));
 
     if (targetMembers.length === 0) {
       this.showToast("ℹ️ 선택하신 회원은 모두 이미 회비가 [납부완료]된 상태입니다.");
@@ -2893,21 +2926,107 @@ const App = {
       return;
     }
 
-    const modal = document.getElementById("mergeAccountModal");
-    const container = document.getElementById("mergeAccountModalBody");
-    if (!modal || !container) return;
-
-    modal.classList.add("active");
-    modal.style.display = "flex";
+    const checkedBoxes = Array.from(document.querySelectorAll(".member-select-check:checked"));
+    const selectedIds = checkedBoxes.map(cb => cb.value);
 
     let m1 = null;
     let m2 = null;
     let matchReason = "전화번호/이메일/회사명 일치 감지";
 
+    // 1) 직접 인자로 ID가 전달된 경우
     if (primaryId && secondaryId) {
       m1 = this.members.find(m => m.id === primaryId);
       m2 = this.members.find(m => m.id === secondaryId);
-    } else {
+    } 
+    // 2) 💡 체크박스로 2명의 회원이 선택된 경우 -> 선택된 2명 즉시 비교 및 감지
+    else if (selectedIds.length === 2) {
+      m1 = this.members.find(m => m.id === selectedIds[0]);
+      m2 = this.members.find(m => m.id === selectedIds[1]);
+
+      if (m1 && m2) {
+        const reasons = [];
+        const p1 = this.normalizePhone(m1.phone);
+        const p2 = this.normalizePhone(m2.phone);
+        const e1 = this.normalizeEmail(m1.Pemail || m1.googleEmail);
+        const e2 = this.normalizeEmail(m2.Pemail || m2.googleEmail);
+        const n1 = (m1.name || "").toString().replace(/\s+/g, "");
+        const n2 = (m2.name || "").toString().replace(/\s+/g, "");
+        const c1 = (m1.company || "").toString().trim().replace(/\s+/g, "").toLowerCase();
+        const c2 = (m2.company || "").toString().trim().replace(/\s+/g, "").toLowerCase();
+
+        if (n1 && n2 && n1 === n2) reasons.push("성명 일치 (" + m1.name + ")");
+        if (p1 && p2 && p1 === p2) reasons.push("전화번호 일치 (" + (m1.phone || p1) + ")");
+        if (e1 && e2 && e1 === e2) reasons.push("이메일 일치 (" + (m1.Pemail || m1.googleEmail || e1) + ")");
+        if (c1 && c2 && c1 === c2) reasons.push("회사명 일치 (" + m1.company + ")");
+
+        if (reasons.length > 0) {
+          matchReason = `선택 회원 중복 감지: ${reasons.join(", ")}`;
+        } else {
+          matchReason = "관리자 체크박스 선택 계정 통합 (수동 지정)";
+        }
+      }
+    }
+    // 3) 💡 체크박스로 1명의 회원이 선택된 경우 -> 해당 회원과 중복 의심되는 다른 회원을 자동 검색
+    else if (selectedIds.length === 1) {
+      const target = this.members.find(m => m.id === selectedIds[0]);
+      if (target) {
+        const tp = this.normalizePhone(target.phone);
+        const te = this.normalizeEmail(target.Pemail || target.googleEmail);
+        const tn = (target.name || "").toString().replace(/\s+/g, "");
+        const tc = (target.company || "").toString().trim().replace(/\s+/g, "").toLowerCase();
+
+        let matched = null;
+        let foundReason = "";
+
+        for (const other of this.members) {
+          if (other.id === target.id) continue;
+          const op = this.normalizePhone(other.phone);
+          const oe = this.normalizeEmail(other.Pemail || other.googleEmail);
+          const on = (other.name || "").toString().replace(/\s+/g, "");
+          const oc = (other.company || "").toString().trim().replace(/\s+/g, "").toLowerCase();
+
+          if (tp && op && tp.length >= 9 && tp === op) {
+            matched = other;
+            foundReason = `전화번호 일치 (${target.phone || tp})`;
+            break;
+          } else if (te && oe && te === oe) {
+            matched = other;
+            foundReason = `이메일 주소 일치 (${target.Pemail || target.googleEmail || te})`;
+            break;
+          } else if (tn && on && tn === on) {
+            if ((tp && op && tp === op) || (te && oe && te === oe)) {
+              matched = other;
+              foundReason = `성명 및 연락처/이메일 일치`;
+              break;
+            } else if (tc && oc && tc === oc) {
+              matched = other;
+              foundReason = `성명 및 회사명 동일 (${target.name} / ${target.company})`;
+              break;
+            } else {
+              matched = other;
+              foundReason = `성명 동일 (${target.name})`;
+              break;
+            }
+          }
+        }
+
+        if (matched) {
+          m1 = target;
+          m2 = matched;
+          matchReason = `선택 회원(${target.name}) 자동 중복 감지: ${foundReason}`;
+        } else {
+          this.showToast(`ℹ️ 선택하신 [${target.name}] 원우와 일치하는 중복 계정이 자동 감지되지 않았습니다. 통합할 다른 계정을 함께 체크(2명)해 주세요.`);
+          return;
+        }
+      }
+    }
+    // 4) 체크박스로 3명 이상 선택된 경우 -> 2명 선택 안내
+    else if (selectedIds.length > 2) {
+      this.showToast("⚠️ 계정 통합은 한 번에 2개의 계정을 비교하여 병합합니다. 2명의 회원을 선택해 주세요.");
+      return;
+    }
+    // 5) 아무것도 선택되지 않은 경우 -> 전체 중복 계정 쌍 자동 탐색
+    else {
       const duplicatePairs = this.findDuplicateAccountPairs();
       if (duplicatePairs.length > 0) {
         m1 = duplicatePairs[0].primary;
@@ -2916,13 +3035,21 @@ const App = {
       }
     }
 
+    const modal = document.getElementById("mergeAccountModal");
+    const container = document.getElementById("mergeAccountModalBody");
+    if (!modal || !container) return;
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+
     if (!m1 || !m2) {
       container.innerHTML = `
         <div style="text-align: center; padding: 40px 20px;">
           <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
           <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">중복 계정이 감지되지 않았습니다.</h4>
           <p style="font-size: 14px; color: var(--color-mute); margin-bottom: 24px;">
-            현재 전화번호, 이메일 또는 성명 및 회사명이 동일한 중복 회원 계정이 없습니다.
+            현재 전화번호, 이메일 또는 성명 및 회사명이 동일한 중복 회원 계정이 없습니다.<br>
+            원하시는 두 계정이 있다면 목록 앞 체크박스로 <strong>2명을 직접 선택</strong> 후 통합할 수 있습니다.
           </p>
           <button class="btn btn-outline" onclick="App.closeMergeAccountModal()">확인 및 닫기</button>
         </div>
@@ -3171,6 +3298,11 @@ const App = {
     StorageService.saveMembers(this.members);
 
     this.closeMergeAccountModal();
+    this.selectedBulkMemberIds = [];
+    const selectAllEl = document.getElementById("selectAllMembersCheck");
+    if (selectAllEl) selectAllEl.checked = false;
+    this.handleMemberSelectChange();
+
     this.showToast(`🎉 ${mergedUser.name} 원우님의 중복 계정이 성공적으로 하나로 통합되었습니다! (회비 납부/정회원 자격 유지)`);
     this.renderAdmin();
     this.renderMemberDirectory();
