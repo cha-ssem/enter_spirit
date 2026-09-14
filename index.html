@@ -13,7 +13,7 @@
 
   <!-- Open Graph / KakaoTalk Link Sharing Preview -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="기업가 정신 통합 플랫폼" />
+  <meta property="og:title" content="기업가 정신 포럼 통합 플랫폼" />
   <meta property="og:description" content="기업가 정신 원우들을 위한 비즈니스 디렉토리 및 주차별 강의 커리큘럼 플랫폼" />
   <meta property="og:image" content="https://cha-ssem.github.io/enter_spirit/images/2026_3_curriculum.jpg" />
 
@@ -2025,29 +2025,75 @@
           </div>
         </div>
 
-        <!-- 2. 강의 내용 인포그래픽 / 요약 자료 첨부 구역 (추가 등록) -->
+        <!-- 2. 강의 내용 인포그래픽 (최대 1개) 또는 강의 파일 다운로드 링크 설정 구역 -->
         <div
           style="margin-bottom: 20px; background: rgba(99, 102, 241, 0.04); border: 1.5px dashed rgba(99, 102, 241, 0.35); border-radius: 8px; padding: 14px 16px;">
           <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <div>
-              <span style="font-size: 13px; font-weight: 700; color: #4338ca;">📊 강의 내용 인포그래픽 / 요약자료 (추가 첨부)</span>
-              <span style="font-size: 11.5px; color: var(--color-mute); margin-left: 6px;">* 고화질 확대 뷰어 지원</span>
+              <span style="font-size: 13px; font-weight: 700; color: #4338ca;">📊 강의 자료 설정 (인포그래픽 1개 또는 파일 다운로드 링크)</span>
+              <span style="font-size: 11.5px; color: var(--color-mute); margin-left: 6px;">* 인포그래픽 이미지 또는 다운로드 링크 중 선택 설정</span>
             </div>
-            <label for="galleryInfographicFiles" class="btn btn-outline btn-sm"
-              style="cursor: pointer; padding: 4px 12px; font-size: 12px; font-weight: 700; border-color: #6366f1; color: #4f46e5; background: rgba(99,102,241,0.08);">
-              ➕ 인포그래픽 추가
-            </label>
-            <input type="file" id="galleryInfographicFiles" multiple accept="image/*" style="display: none;"
-              onchange="App.handleGalleryInfographicSelect(event)" />
+
+            <!-- 자료 유형 선택 탭/버튼 -->
+            <div style="display: flex; gap: 6px; background: rgba(99,102,241,0.08); padding: 3px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.2);">
+              <button type="button" id="galleryMaterialTabInfographic" class="btn btn-sm"
+                style="padding: 3px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; background: #4f46e5; color: #ffffff; border: none; cursor: pointer;"
+                onclick="App.switchGalleryMaterialType('infographic')">
+                📊 인포그래픽 (1개)
+              </button>
+              <button type="button" id="galleryMaterialTabDownload" class="btn btn-sm"
+                style="padding: 3px 10px; font-size: 12px; font-weight: 600; border-radius: 4px; background: transparent; color: #4b5563; border: none; cursor: pointer;"
+                onclick="App.switchGalleryMaterialType('download')">
+                📁 파일 다운로드 링크
+              </button>
+            </div>
           </div>
 
-          <!-- 인포그래픽 미리보기 그리드 -->
-          <div id="galleryInfographicPreviewGrid"
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; min-height: 60px;">
-            <div
-              style="grid-column: span 4; text-align: center; color: var(--color-mute); font-size: 12.5px; padding: 12px 0;">
-              추가된 인포그래픽/강의 요약 이미지가 없습니다. (선택 사항)
+          <!-- 2-A. 인포그래픽 이미지 첨부 영역 (최대 1개) -->
+          <div id="galleryInfographicSection" style="display: block;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 12px; color: var(--color-mute);">고화질 강의 요약 인포그래픽 이미지 (1개 등록 가능)</span>
+              <label for="galleryInfographicFiles" class="btn btn-outline btn-sm"
+                style="cursor: pointer; padding: 4px 12px; font-size: 12px; font-weight: 700; border-color: #6366f1; color: #4f46e5; background: rgba(99,102,241,0.08);">
+                ➕ 인포그래픽 선택
+              </label>
+              <input type="file" id="galleryInfographicFiles" accept="image/*" style="display: none;"
+                onchange="App.handleGalleryInfographicSelect(event)" />
+            </div>
+
+            <!-- 인포그래픽 미리보기 그리드 -->
+            <div id="galleryInfographicPreviewGrid"
+              style="min-height: 60px;">
+              <div
+                style="text-align: center; color: var(--color-mute); font-size: 12.5px; padding: 12px 0;">
+                선택된 인포그래픽 이미지가 없습니다. (선택 사항)
+              </div>
+            </div>
+          </div>
+
+          <!-- 2-B. 강의 파일 다운로드 링크 설정 영역 -->
+          <div id="galleryDownloadSection" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                  🔗 강의 교안 / 파일 다운로드 링크 (URL)
+                </label>
+                <input type="url" id="galleryDownloadUrlInput" class="form-input"
+                  placeholder="예: https://drive.google.com/file/... 또는 파일 웹 다운로드 주소"
+                  style="width: 100%; font-size: 13px;" />
+              </div>
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                  📑 표시할 자료명 / 파일 이름
+                </label>
+                <input type="text" id="galleryDownloadNameInput" class="form-input"
+                  placeholder="예: 1주차_기업가정신_강의교안.pdf 또는 강의 요약 자료집"
+                  style="width: 100%; font-size: 13px;" />
+              </div>
+              <div style="font-size: 11.5px; color: #6b7280; background: rgba(255,255,255,0.7); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.15);">
+                💡 구글 드라이브 공유 링크, 노션 자료 링크, PDF 파일 링크 등을 등록하면 갤러리 카드에서 바로 다운로드 버튼이 제공됩니다.
+              </div>
             </div>
           </div>
         </div>

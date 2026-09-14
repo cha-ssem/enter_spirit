@@ -4802,19 +4802,19 @@ const App = {
         `;
       }
 
-      // 1-B. 인포그래픽 HTML 템플릿
+      // 1-B. 인포그래픽 HTML 템플릿 (최대 1개 최적화 렌더링)
       let infographicCardHtml = "";
       if (infographics.length > 0) {
         infographicCardHtml = `
-          <div style="padding: 16px; background: rgba(99, 102, 241, 0.05); border: 1.5px solid rgba(99, 102, 241, 0.35); border-radius: 8px; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+          <div style="padding: 16px; background: rgba(99, 102, 241, 0.05); border: 1.5px solid rgba(99, 102, 241, 0.35); border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; flex-wrap: wrap; gap: 6px;">
               <span style="background: #4f46e5; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);">
-                📊 강의 내용 인포그래픽 (${infographics.length}장)
+                📊 강의 내용 인포그래픽
               </span>
               <span style="font-size: 11.5px; color: var(--color-mute);">🔍 클릭 시 원본 고화질 확대</span>
             </div>
-            <div style="display: grid; grid-template-columns: ${infographics.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))'}; gap: 10px; flex: 1; align-items: center;">
-              ${infographics.map((imgObj, idx) => {
+            <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center;">
+              ${infographics.slice(0, 1).map((imgObj, idx) => {
                 const targetZoomUrl = (parsedWeekNum && idx === 0) ? `images/${parsedWeekNum}week_lecture_summary.png` : imgObj.url;
                 const displayThumbnail = imgObj.url || (parsedWeekNum ? `images/${parsedWeekNum}week_lecture_summary.png` : "");
                 return `
@@ -4827,25 +4827,88 @@ const App = {
                 `;
               }).join("")}
             </div>
+            <div style="font-size: 11.5px; color: var(--color-mute); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span>💡 핵심 내용 시각화 요약 도표</span>
+              <span style="color: #4f46e5; font-weight: 600;">고화질 뷰어 지원 ↗</span>
+            </div>
           </div>
         `;
       }
 
-      // 1-C. 듀얼 배치 결합 (인포그래픽 왼쪽, YouTube 오른쪽)
-      if (infographics.length > 0 && youtubeVideoId) {
-        mediaSectionHtml = `
-          <div style="margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+      // 1-C. 강의 파일 / 교안 다운로드 카드 HTML 템플릿
+      let downloadCardHtml = "";
+      if (item.downloadUrl) {
+        const downloadTitle = item.downloadName || (parsedWeekNum ? `${parsedWeekNum}주차 강의 교안 및 자료집` : `${item.title} 강의 자료`);
+        downloadCardHtml = `
+          <div style="padding: 16px; background: rgba(59, 130, 246, 0.05); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+              <span style="background: #2563eb; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);">
+                📁 강의 자료 / 교안 다운로드
+              </span>
+              <span style="font-size: 11.5px; color: var(--color-mute);">클라우드 파일 연동</span>
+            </div>
+
+            <!-- 자료 상세 안내 박스 -->
+            <div style="background: var(--color-surface); border: 1px solid var(--color-hairline); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 8px; background: #eff6ff; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                  📑
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 700; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(downloadTitle)}">
+                    ${this.escapeHtml(downloadTitle)}
+                  </div>
+                  <div style="font-size: 11.5px; color: var(--color-mute); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(item.downloadUrl)}">
+                    🔗 ${this.escapeHtml(item.downloadUrl)}
+                  </div>
+                </div>
+              </div>
+
+              <a href="${this.escapeHtml(item.downloadUrl)}" target="_blank" rel="noopener noreferrer"
+                 onclick="event.stopPropagation()"
+                 style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 16px; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);"
+                 onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#2563eb'; this.style.transform='none'">
+                ⬇️ 강의 자료 / 파일 다운로드 (새 창) ↗
+              </a>
+            </div>
+
+            <div style="font-size: 11.5px; color: var(--color-mute); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span>💡 구글 드라이브 / PDF / 웹 교안</span>
+              <span style="color: #2563eb; font-weight: 600;">안전한 외부 연결 ↗</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 1-D. 듀얼 배치 결합 (좌측: 인포그래픽 또는 다운로드 링크, 우측: YouTube 영상 - 1줄 나란히 표시 유지)
+      let leftMaterialHtml = "";
+      if (infographics.length > 0 && item.downloadUrl) {
+        leftMaterialHtml = `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
             ${infographicCardHtml}
-            ${youtubeCardHtml}
+            ${downloadCardHtml}
           </div>
         `;
       } else if (infographics.length > 0) {
+        leftMaterialHtml = infographicCardHtml;
+      } else if (item.downloadUrl) {
+        leftMaterialHtml = downloadCardHtml;
+      }
+
+      if (leftMaterialHtml && (youtubeCardHtml || youtubeVideoId)) {
         mediaSectionHtml = `
-          <div style="margin-top: 18px;">
-            ${infographicCardHtml}
+          <div style="margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+            ${leftMaterialHtml}
+            ${youtubeCardHtml}
           </div>
         `;
-      } else if (youtubeVideoId) {
+      } else if (leftMaterialHtml) {
+        mediaSectionHtml = `
+          <div style="margin-top: 18px;">
+            ${leftMaterialHtml}
+          </div>
+        `;
+      } else if (youtubeCardHtml || youtubeVideoId) {
         mediaSectionHtml = `
           <div style="margin-top: 18px;">
             ${youtubeCardHtml}
@@ -4910,6 +4973,7 @@ const App = {
               <div style="font-size: 12.5px; color: var(--color-mute); display: flex; align-items: center; gap: 8px;">
                 <span>✍️ ${this.escapeHtml(item.author || '13기 원우')}</span>
                 ${infographics.length > 0 ? `<span style="color: #4f46e5; font-weight: 700; background: #e0e7ff; padding: 1px 6px; border-radius: 3px; font-size: 11px;">📊 인포그래픽</span>` : ''}
+                ${item.downloadUrl ? `<span style="color: #2563eb; font-weight: 700; background: #eff6ff; padding: 1px 6px; border-radius: 3px; font-size: 11px;">📁 자료</span>` : ''}
                 ${youtubeVideoId ? `<span style="color: #dc2626; font-weight: 700; background: #fee2e2; padding: 1px 6px; border-radius: 3px; font-size: 11px;">🎬 영상</span>` : ''}
                 ${totalImageCount > 0 ? `<span style="color: #2563eb; font-weight: 600;">📷 ${totalImageCount}장</span>` : ''}
               </div>
@@ -5015,6 +5079,42 @@ const App = {
     }
   },
 
+  /* 💡 강의 자료 설정 탭 전환 (인포그래픽 1개 vs 파일 다운로드 링크) */
+  switchGalleryMaterialType(type) {
+    const infoSec = document.getElementById("galleryInfographicSection");
+    const downSec = document.getElementById("galleryDownloadSection");
+    const infoTab = document.getElementById("galleryMaterialTabInfographic");
+    const downTab = document.getElementById("galleryMaterialTabDownload");
+
+    if (type === "download") {
+      if (infoSec) infoSec.style.display = "none";
+      if (downSec) downSec.style.display = "block";
+      if (infoTab) {
+        infoTab.style.background = "transparent";
+        infoTab.style.color = "#4b5563";
+        infoTab.style.fontWeight = "600";
+      }
+      if (downTab) {
+        downTab.style.background = "#2563eb";
+        downTab.style.color = "#ffffff";
+        downTab.style.fontWeight = "700";
+      }
+    } else {
+      if (infoSec) infoSec.style.display = "block";
+      if (downSec) downSec.style.display = "none";
+      if (infoTab) {
+        infoTab.style.background = "#4f46e5";
+        infoTab.style.color = "#ffffff";
+        infoTab.style.fontWeight = "700";
+      }
+      if (downTab) {
+        downTab.style.background = "transparent";
+        downTab.style.color = "#4b5563";
+        downTab.style.fontWeight = "600";
+      }
+    }
+  },
+
   /* 갤러리 등록 모달 (일반 신규) */
   openGalleryModal() {
     if (!this.hasPermission("gallery_manage")) {
@@ -5050,6 +5150,11 @@ const App = {
       }
     }
 
+    const downloadUrlInput = document.getElementById("galleryDownloadUrlInput");
+    if (downloadUrlInput) downloadUrlInput.value = "";
+    const downloadNameInput = document.getElementById("galleryDownloadNameInput");
+    if (downloadNameInput) downloadNameInput.value = "";
+
     const ytInput = document.getElementById("galleryYoutubeInput");
     if (ytInput) ytInput.value = this.DEFAULT_GALLERY_YOUTUBE_URL;
     this.previewGalleryYoutube();
@@ -5058,6 +5163,7 @@ const App = {
     this.tempGalleryInfographics = [];
     this.renderGalleryPhotoPreviews();
     this.renderGalleryInfographicPreviews();
+    this.switchGalleryMaterialType("infographic");
 
     modal.classList.add("active");
     modal.style.display = "flex";
@@ -5127,6 +5233,11 @@ const App = {
 ${l.description || '강의의 핵심 인사이트와 현장에서 나눈 생생한 질의응답 내용을 기록해 보세요.'}`;
     }
 
+    const downloadUrlInput = document.getElementById("galleryDownloadUrlInput");
+    if (downloadUrlInput) downloadUrlInput.value = l.downloadUrl || l.fileUrl || "";
+    const downloadNameInput = document.getElementById("galleryDownloadNameInput");
+    if (downloadNameInput) downloadNameInput.value = l.downloadName || l.fileName || (l.title ? `${l.week}주차_${l.title}_강의자료.pdf` : "");
+
     const ytInput = document.getElementById("galleryYoutubeInput");
     if (ytInput) ytInput.value = l.youtubeUrl || this.DEFAULT_GALLERY_YOUTUBE_URL;
     this.previewGalleryYoutube();
@@ -5135,6 +5246,7 @@ ${l.description || '강의의 핵심 인사이트와 현장에서 나눈 생생�
     this.tempGalleryInfographics = [];
     this.renderGalleryPhotoPreviews();
     this.renderGalleryInfographicPreviews();
+    this.switchGalleryMaterialType(downloadUrlInput && downloadUrlInput.value ? "download" : "infographic");
 
     modal.classList.add("active");
     modal.style.display = "flex";
@@ -5199,6 +5311,11 @@ ${l.description || '강의의 핵심 인사이트와 현장에서 나눈 생생�
 ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이야기를 기록해 보세요.'}`;
     }
 
+    const downloadUrlInput = document.getElementById("galleryDownloadUrlInput");
+    if (downloadUrlInput) downloadUrlInput.value = "";
+    const downloadNameInput = document.getElementById("galleryDownloadNameInput");
+    if (downloadNameInput) downloadNameInput.value = "";
+
     const ytInput = document.getElementById("galleryYoutubeInput");
     if (ytInput) ytInput.value = ev.youtubeUrl || this.DEFAULT_GALLERY_YOUTUBE_URL;
     this.previewGalleryYoutube();
@@ -5207,6 +5324,7 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     this.tempGalleryInfographics = [];
     this.renderGalleryPhotoPreviews();
     this.renderGalleryInfographicPreviews();
+    this.switchGalleryMaterialType("infographic");
 
     modal.classList.add("active");
     modal.style.display = "flex";
@@ -5253,21 +5371,32 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     const contentInput = document.getElementById("galleryContentInput");
     if (contentInput) contentInput.value = item.content || "";
 
+    const downloadUrlInput = document.getElementById("galleryDownloadUrlInput");
+    if (downloadUrlInput) downloadUrlInput.value = item.downloadUrl || "";
+    const downloadNameInput = document.getElementById("galleryDownloadNameInput");
+    if (downloadNameInput) downloadNameInput.value = item.downloadName || "";
+
     const ytInput = document.getElementById("galleryYoutubeInput");
     if (ytInput) ytInput.value = item.youtubeUrl || item.videoUrl || "";
     this.previewGalleryYoutube();
 
-    // 기존 사진 배열 복원 (일반 사진과 인포그래픽 분리 로드)
+    // 기존 사진 배열 복원 (일반 사진과 인포그래픽 분리 로드, 인포그래픽은 최대 1개)
     const allImages = (item.images || []).map(img => {
       if (typeof img === "string") return { url: img, isInfographic: false };
       return { url: img.url || "", isInfographic: !!img.isInfographic };
     }).filter(img => !!img.url);
 
     this.tempGalleryPhotos = allImages.filter(img => !img.isInfographic);
-    this.tempGalleryInfographics = allImages.filter(img => img.isInfographic);
+    this.tempGalleryInfographics = allImages.filter(img => img.isInfographic).slice(0, 1);
 
     this.renderGalleryPhotoPreviews();
     this.renderGalleryInfographicPreviews();
+
+    if (item.downloadUrl && this.tempGalleryInfographics.length === 0) {
+      this.switchGalleryMaterialType("download");
+    } else {
+      this.switchGalleryMaterialType("infographic");
+    }
 
     modal.classList.add("active");
     modal.style.display = "flex";
@@ -5284,6 +5413,10 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     if (form) form.reset();
     const editIdInput = document.getElementById("galleryEditId");
     if (editIdInput) editIdInput.value = "";
+    const downloadUrlInput = document.getElementById("galleryDownloadUrlInput");
+    if (downloadUrlInput) downloadUrlInput.value = "";
+    const downloadNameInput = document.getElementById("galleryDownloadNameInput");
+    if (downloadNameInput) downloadNameInput.value = "";
     const ytInput = document.getElementById("galleryYoutubeInput");
     if (ytInput) ytInput.value = "";
     this.previewGalleryYoutube();
@@ -5291,6 +5424,7 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     this.tempGalleryInfographics = [];
     this.renderGalleryPhotoPreviews();
     this.renderGalleryInfographicPreviews();
+    this.switchGalleryMaterialType("infographic");
   },
 
   /* 💡 1. 일반 현장 사진 선택 및 경량화 압축 (.jpg 800px 포맷, 최대 4장) */
@@ -5358,56 +5492,61 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     e.target.value = "";
   },
 
-  /* 💡 2. 강의 내용 인포그래픽 / 요약자료 선택 (고화질 최대 1600px, 0.85 quality) */
+  /* 💡 2. 강의 내용 인포그래픽 / 요약자료 선택 (최대 1개, 고화질 1600px, 0.85 quality) */
   async handleGalleryInfographicSelect(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith("image/")) continue;
-
-      const compressedBase64 = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            const maxDim = 1600; // 도표 및 글자 가독성을 위해 1600px 고화질 유지
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-              if (width > maxDim) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              }
-            } else {
-              if (height > maxDim) {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // 도표 선명도를 위해 0.85 quality 적용
-            resolve(canvas.toDataURL("image/jpeg", 0.85));
-          };
-          img.src = evt.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-
-      this.tempGalleryInfographics.push({
-        url: compressedBase64,
-        isInfographic: true
-      });
+    const file = files[0];
+    if (!file.type.startsWith("image/")) {
+      this.showToast("⚠️ 이미지 파일만 선택할 수 있습니다.");
+      e.target.value = "";
+      return;
     }
 
+    const compressedBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          const maxDim = 1600; // 도표 및 글자 가독성을 위해 1600px 고화질 유지
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 도표 선명도를 위해 0.85 quality 적용
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 1개 인포그래픽으로 교체 설정
+    this.tempGalleryInfographics = [{
+      url: compressedBase64,
+      isInfographic: true
+    }];
+
     this.renderGalleryInfographicPreviews();
+    this.showToast("📊 인포그래픽 요약 이미지가 설정되었습니다. (1개)");
     e.target.value = "";
   },
 
@@ -5416,7 +5555,7 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     this.renderGalleryPhotoPreviews();
   },
 
-  removeGalleryInfographic(index) {
+  removeGalleryInfographic(index = 0) {
     this.tempGalleryInfographics.splice(index, 1);
     this.renderGalleryInfographicPreviews();
   },
@@ -5455,26 +5594,27 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
 
     if (this.tempGalleryInfographics.length === 0) {
       grid.innerHTML = `
-        <div style="grid-column: span 4; text-align: center; color: var(--color-mute); font-size: 12.5px; padding: 12px 0;">
-          추가된 인포그래픽/강의 요약 이미지가 없습니다. (선택 사항)
+        <div style="text-align: center; color: var(--color-mute); font-size: 12.5px; padding: 12px 0;">
+          선택된 인포그래픽 이미지가 없습니다. (선택 사항)
         </div>
       `;
       return;
     }
 
-    grid.innerHTML = this.tempGalleryInfographics.map((photo, idx) => `
-      <div style="background: var(--color-surface); border: 1.5px solid #6366f1; border-radius: 8px; padding: 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 2px 8px rgba(99,102,241,0.15);">
+    const photo = this.tempGalleryInfographics[0];
+    grid.innerHTML = `
+      <div style="background: var(--color-surface); border: 1.5px solid #6366f1; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 8px rgba(99,102,241,0.15); max-width: 420px; margin: 0 auto;">
         <div style="position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; background: #1e1e2e;">
-          <img src="${photo.url}" alt="인포그래픽 ${idx + 1}" style="width: 100%; height: 100%; object-fit: contain;" />
-          <button type="button" onclick="App.removeGalleryInfographic(${idx})"
-                  style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.75); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+          <img src="${photo.url}" alt="인포그래픽" style="width: 100%; height: 100%; object-fit: contain;" />
+          <button type="button" onclick="App.removeGalleryInfographic(0)"
+                  style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.8); color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;"
                   title="인포그래픽 삭제">&times;</button>
         </div>
-        <div style="font-size: 11.5px; text-align: center; color: #4338ca; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px;">
-          📊 인포그래픽 ${idx + 1}
+        <div style="font-size: 12px; text-align: center; color: #4338ca; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          📊 설정된 요약 인포그래픽 (1개)
         </div>
       </div>
-    `).join("");
+    `;
   },
 
   /* 💡 갤러리 등록 및 수정 저장 */
@@ -5494,6 +5634,8 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
     const date = document.getElementById("galleryDateInput").value;
     const authorInput = document.getElementById("galleryAuthorInput").value.trim();
     const content = document.getElementById("galleryContentInput").value.trim();
+    const downloadUrl = (document.getElementById("galleryDownloadUrlInput")?.value || "").trim();
+    const downloadName = (document.getElementById("galleryDownloadNameInput")?.value || "").trim();
     const youtubeUrl = (document.getElementById("galleryYoutubeInput")?.value || "").trim();
 
     if (!title || !date || !content) {
@@ -5507,9 +5649,10 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
       if (me) defaultAuthor = `${me.name} (${me.company || '13기'})`;
     }
 
+    // 인포그래픽은 최대 1개만 허용
     const combinedImages = [
-      ...this.tempGalleryPhotos,
-      ...this.tempGalleryInfographics
+      ...this.tempGalleryPhotos.slice(0, 4),
+      ...this.tempGalleryInfographics.slice(0, 1)
     ];
 
     if (editId) {
@@ -5527,6 +5670,8 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
         date,
         author: authorInput || defaultAuthor,
         content,
+        downloadUrl: downloadUrl || "",
+        downloadName: downloadName || "",
         youtubeUrl: youtubeUrl || "",
         images: combinedImages,
         updatedAt: new Date().toISOString()
@@ -5560,6 +5705,8 @@ ${ev.description || '원우님들과 함께한 즐거운 행사 후기 및 이�
         date,
         author: authorInput || defaultAuthor,
         content,
+        downloadUrl: downloadUrl || "",
+        downloadName: downloadName || "",
         youtubeUrl: youtubeUrl || "",
         images: combinedImages,
         createdAt: new Date().toISOString()
